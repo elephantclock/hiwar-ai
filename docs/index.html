@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hiwar AI | Arabic voice AI agent for UAE &amp; GCC: Gulf Arabic, English, Hindi, Urdu</title>
+<meta name="description" content="Hiwar AI (حوار) is an Arabic-first multilingual conversational AI for the UAE and GCC. Voice and chat agents for customer calls, support, reservations, complaints and service requests in Gulf Arabic, MSA, English, Hindi and Urdu, with natural code-switching and Arabizi.">
+<meta name="keywords" content="Arabic voice AI, Gulf Arabic AI, Khaleeji, Emirati Arabic, Saudi Arabic, conversational AI UAE, AI voice agent Dubai, Arabic chatbot, code-switching, Arabizi, Hindi Urdu voice AI, call center AI GCC, WhatsApp AI agent, customer service automation Saudi Arabia">
+<link rel="canonical" href="https://elephantclock.github.io/hiwar-ai/">
+<meta name="theme-color" content="#EDEFEA">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Hiwar AI">
+<meta property="og:title" content="Hiwar AI: Arabic-first conversational AI for the UAE & GCC">
+<meta property="og:description" content="Voice and chat agents that understand Gulf Arabic, English, Hindi and Urdu, even when customers switch languages mid-sentence.">
+<meta property="og:url" content="https://elephantclock.github.io/hiwar-ai/">
+<meta property="og:locale" content="en_AE">
+<meta property="og:locale:alternate" content="ar_AE">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hiwar AI: Arabic-first conversational AI for the UAE & GCC">
+<meta name="twitter:description" content="Voice and chat agents for Gulf Arabic, English, Hindi and Urdu, with code-switching and Arabizi.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2312232B'/%3E%3Ctext x='16' y='22' font-size='17' text-anchor='middle' fill='%23EDEFEA' font-family='sans-serif'%3E%D8%AD%3C/text%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500&family=Noto+Nastaliq+Urdu:wght@400;500&display=swap" rel="stylesheet">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Hiwar AI",
+  "alternateName": "حوار",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Cloud",
+  "description": "Arabic-first multilingual conversational AI for the UAE and GCC: voice and chat agents for customer calls, support, reservations, complaints and service requests in Gulf Arabic, MSA, Egyptian and Levantine Arabic, English, Hindi and Urdu, with code-switching and Arabizi.",
+  "inLanguage": ["ar", "en", "hi", "ur"],
+  "areaServed": ["AE", "SA", "QA", "KW", "BH", "OM"],
+  "url": "https://elephantclock.github.io/hiwar-ai/",
+  "codeRepository": "https://github.com/elephantclock/hiwar-ai",
+  "license": "https://polyformproject.org/licenses/noncommercial/1.0.0",
+  "publisher": { "@type": "Organization", "name": "Elephant Clock Technology", "url": "https://elephantclock.tech" }
+}
+</script>
+
+<style>
+  :root {
+    --ground: #EDEFEA;
+    --paper: #F8F9F6;
+    --ink: #12232B;
+    --muted: #4C5D63;
+    --rule: #C7CFCB;
+    --ar: #A12B2B;
+    --en: #2E4A9E;
+    --hi: #8C5A0E;
+    --focus: #2E4A9E;
+    --latin: "Readex Pro", system-ui, sans-serif;
+    --arabic: "Readex Pro", "Geeza Pro", "Noto Sans Arabic", sans-serif;
+    --deva: "Noto Sans Devanagari", "Kohinoor Devanagari", sans-serif;
+    --urdu: "Noto Nastaliq Urdu", "Noto Sans Arabic", serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0F1C22;
+      --paper: #16262D;
+      --ink: #E4E9E6;
+      --muted: #A3B1B4;
+      --rule: #2C3E45;
+      --ar: #E8857A;
+      --en: #9DB0F0;
+      --hi: #E2AA5A;
+      --focus: #9DB0F0;
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--latin);
+    font-weight: 300;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+  [lang="ar"] { font-family: var(--arabic); }
+  [lang="hi"] { font-family: var(--deva); }
+  [lang="ur"] { font-family: var(--urdu); line-height: 2.1; }
+  a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+  a:hover { text-decoration-thickness: 2px; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 2px; }
+  strong { font-weight: 500; }
+
+  .wrap { max-width: 72rem; margin: 0 auto; padding-inline: clamp(1rem, 4vw, 2.5rem); }
+
+  /* Header */
+  .top { padding-block: 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .mark { display: flex; align-items: baseline; gap: 0.6rem; text-decoration: none; }
+  .mark-en { font-weight: 600; font-size: 1.2rem; letter-spacing: -0.01em; }
+  .mark-ar { font-family: var(--arabic); font-weight: 600; font-size: 1.35rem; color: var(--ar); }
+  .top nav { display: flex; gap: 1.4rem; flex-wrap: wrap; font-size: 0.95rem; font-weight: 400; }
+  .top nav a { text-decoration: none; }
+  .top nav a:hover { text-decoration: underline; }
+
+  /* Bilingual sign headings: English left, Arabic right, as on UAE road signs */
+  .sign {
+    display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 0.5rem 2rem;
+    border-top: 2px solid var(--ink); padding-top: 0.9rem; margin-bottom: 2.25rem;
+  }
+  .sign h2 { margin: 0; font-size: clamp(1.6rem, 3.2vw, 2.25rem); font-weight: 500; letter-spacing: -0.015em; line-height: 1.15; }
+  .sign p { margin: 0; font-family: var(--arabic); font-size: clamp(1.6rem, 3.2vw, 2.25rem); font-weight: 500; line-height: 1.3; text-align: right; }
+
+  section { padding-block: clamp(3.5rem, 8vw, 6rem); }
+
+  /* Hero */
+  .hero { padding-block: clamp(2rem, 6vw, 4.5rem) clamp(3rem, 6vw, 5rem); }
+  .hero-heads { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem 3rem; align-items: end; }
+  .hero h1 { margin: 0; font-size: clamp(2.1rem, 4.6vw, 3.6rem); font-weight: 500; line-height: 1.08; letter-spacing: -0.025em; max-width: 16ch; }
+  .hero .ar-head { margin: 0; font-family: var(--arabic); font-size: clamp(1.9rem, 4vw, 3.1rem); font-weight: 500; line-height: 1.35; text-align: right; color: var(--ink); }
+  .lede { grid-column: 1 / -1; max-width: 60ch; font-size: 1.15rem; color: var(--muted); margin: 0.5rem 0 0; }
+  .actions { display: flex; gap: 0.75rem 1.5rem; flex-wrap: wrap; align-items: center; margin-top: 1.75rem; }
+  .btn {
+    display: inline-block; background: var(--ink); color: var(--ground); text-decoration: none;
+    font-weight: 500; padding: 0.8rem 1.3rem; border-radius: 6px;
+  }
+  .btn:hover { text-decoration: none; opacity: 0.9; }
+  .status { font-size: 0.9rem; color: var(--muted); }
+
+  /* Transcript specimen */
+  .specimen { margin-top: clamp(2.5rem, 5vw, 3.75rem); background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; }
+  .tabs { display: flex; flex-wrap: wrap; border-bottom: 1px solid var(--rule); }
+  .tabs button {
+    font: inherit; font-size: 0.95rem; font-weight: 400; color: var(--muted); background: none; border: 0;
+    padding: 0.95rem 1.25rem; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tabs button[aria-selected="true"] { color: var(--ink); font-weight: 500; border-bottom-color: var(--ink); }
+  .panel { padding: clamp(1.25rem, 3.5vw, 2.5rem); }
+  .turn { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 0.5rem 1.5rem; align-items: start; }
+  .turn + .turn { margin-top: 2rem; padding-top: 2rem; border-top: 1px dashed var(--rule); }
+  .who { font-size: 0.9rem; color: var(--muted); padding-top: 0.6rem; }
+  .who strong { display: block; color: var(--ink); }
+  .utt { margin: 0; font-size: clamp(1.35rem, 2.8vw, 2.05rem); line-height: 1.5; font-weight: 400; display: flex; flex-wrap: wrap; gap: 0.35rem 0.55rem; }
+  .utt[dir="rtl"] { justify-content: flex-start; }
+  .seg { display: inline-flex; flex-direction: column; unicode-bidi: isolate; max-width: 100%; min-width: 0; }
+  /* The segment's language colour drives the underline and tag; the words stay in ink */
+  .seg.ar, .seg.az { --lc: var(--ar); }
+  .seg.en { --lc: var(--en); }
+  .seg.hi { --lc: var(--hi); }
+  .seg > span:first-child { color: var(--ink); border-bottom: 3px solid var(--lc); padding-bottom: 0.1em; }
+  .seg.az > span:first-child { border-bottom-style: dashed; }
+  .seg small {
+    font-family: var(--latin); font-size: 0.75rem; font-weight: 500; line-height: 1.2; margin-top: 0.35rem;
+    direction: ltr; text-align: start; color: var(--lc);
+  }
+  .norm { grid-column: 2; margin: 0.9rem 0 0; font-size: 0.95rem; color: var(--muted); }
+  .norm span[lang="ar"] { color: var(--ink); font-size: 1.1rem; }
+  .note { padding: 0.9rem clamp(1.25rem, 3.5vw, 2.5rem); border-top: 1px solid var(--rule); font-size: 0.88rem; color: var(--muted); margin: 0; }
+  @media (prefers-reduced-motion: no-preference) {
+    .panel:not([hidden]) .seg { animation: rise 0.45s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i) * 90ms); }
+    @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  }
+
+  /* Languages */
+  .langs { display: grid; grid-template-columns: 1.35fr 1fr; gap: 3rem; }
+  .lang-primary { border-left: 4px solid var(--ar); padding-left: 1.5rem; }
+  .lang-primary h3, .lang-other h3 { margin: 0 0 0.25rem; font-size: 1.5rem; font-weight: 500; display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; }
+  .lang-primary h3 [lang="ar"] { color: var(--ar); }
+  .role { margin: 0 0 1.25rem; color: var(--muted); }
+  dl.varieties { margin: 0; display: grid; grid-template-columns: 1fr auto; }
+  dl.varieties dt, dl.varieties dd { padding: 0.7rem 0; border-top: 1px solid var(--rule); margin: 0; }
+  dl.varieties dt { font-weight: 400; }
+  dl.varieties dt small { display: block; color: var(--muted); font-size: 0.88rem; }
+  dl.varieties dd { text-align: right; font-size: 0.9rem; color: var(--muted); padding-left: 1rem; }
+  .lang-other { padding-left: 1.5rem; margin-bottom: 2.25rem; }
+  .lang-other.en { border-left: 4px solid var(--en); }
+  .lang-other.hi { border-left: 4px solid var(--hi); }
+  .lang-other p { margin: 0; color: var(--muted); }
+  .script-row { display: flex; gap: 1.25rem; flex-wrap: wrap; margin-top: 0.6rem; font-size: 1.3rem; color: var(--ink); }
+  .pairs { margin-top: 3.5rem; }
+  .pairs h3 { font-size: 1.25rem; font-weight: 500; margin: 0 0 1rem; }
+  .pairs ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 0 2rem; }
+  .pairs li { padding: 0.8rem 0; border-top: 1px solid var(--rule); }
+  .pairs li small { display: block; color: var(--muted); font-size: 0.9rem; }
+  .swatch { display: inline-block; width: 0.7em; height: 0.7em; border-radius: 50%; vertical-align: 0.05em; margin-right: 0.15em; }
+  .swatch.ar { background: var(--ar); } .swatch.en { background: var(--en); } .swatch.hi { background: var(--hi); }
+  .swatch.az { background: transparent; border: 1.5px dashed var(--ar); box-sizing: border-box; }
+  .next { margin-top: 2.5rem; color: var(--muted); max-width: 65ch; }
+
+  /* Use cases */
+  .uses { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 4rem; }
+  .use { padding: 1.4rem 0; border-top: 1px solid var(--rule); }
+  .use h3 { margin: 0 0 0.35rem; font-size: 1.2rem; font-weight: 500; }
+  .use p { margin: 0; color: var(--muted); max-width: 52ch; }
+  .industries { margin-top: 2.5rem; color: var(--muted); }
+  .industries strong { color: var(--ink); }
+
+  /* Gulf section */
+  .gulf { background: var(--ink); color: var(--ground); }
+  .gulf .sign { border-top-color: var(--ground); }
+  .gulf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem; }
+  .gulf-grid h3 { margin: 0 0 0.5rem; font-size: 1.15rem; font-weight: 500; }
+  .gulf-grid p { margin: 0; opacity: 0.8; }
+
+  /* Roadmap: a real sequence, so it is numbered */
+  ol.road { list-style: none; padding: 0; margin: 0; counter-reset: phase -1; }
+  ol.road li { counter-increment: phase; display: grid; grid-template-columns: 6rem 1fr auto; gap: 0.5rem 1.5rem; padding: 1.1rem 0; border-top: 1px solid var(--rule); align-items: baseline; }
+  ol.road li::before { content: "Phase " counter(phase); color: var(--muted); font-size: 0.92rem; }
+  ol.road h3 { margin: 0; font-size: 1.15rem; font-weight: 500; }
+  ol.road p { margin: 0.2rem 0 0; color: var(--muted); }
+  ol.road .now { font-size: 0.85rem; font-weight: 500; color: var(--ground); background: var(--ar); padding: 0.15rem 0.6rem; border-radius: 999px; white-space: nowrap; }
+
+  /* License + CTA */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+  .split h3 { margin: 0 0 0.6rem; font-size: 1.25rem; font-weight: 500; }
+  .split p { margin: 0 0 0.9rem; color: var(--muted); max-width: 55ch; }
+  .split ul { margin: 0 0 1rem; padding-left: 1.1rem; color: var(--muted); }
+  .cta { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: clamp(1.5rem, 4vw, 2.5rem); }
+  .cta .btn { margin-top: 0.5rem; }
+
+  footer { padding-block: 2.5rem 3rem; border-top: 1px solid var(--rule); font-size: 0.9rem; color: var(--muted); }
+  footer .wrap { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+
+  @media (max-width: 760px) {
+    .hero-heads { grid-template-columns: 1fr; }
+    .hero .ar-head { order: -1; }
+    .sign { grid-template-columns: 1fr; }
+    .sign p { order: -1; }
+    .turn { grid-template-columns: minmax(0, 1fr); }
+    .tabs button { padding: 0.75rem 1rem; }
+    .who { padding-top: 0; }
+    .norm { grid-column: 1; }
+    .langs, .uses, .gulf-grid, .split { grid-template-columns: 1fr; }
+    .uses { gap: 0; }
+    ol.road li { grid-template-columns: 1fr; }
+    ol.road .now { justify-self: start; }
+  }
+</style>
+</head>
+<body>
+
+<header class="wrap top">
+  <a class="mark" href="./" aria-label="Hiwar AI home">
+    <span class="mark-en">Hiwar AI</span><span class="mark-ar" lang="ar">حوار</span>
+  </a>
+  <nav aria-label="Main">
+    <a href="#languages">Languages</a>
+    <a href="#use-cases">Use cases</a>
+    <a href="#roadmap">Roadmap</a>
+    <a href="https://github.com/elephantclock/hiwar-ai">GitHub</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="hero-heads">
+      <h1 id="hero-title">Your customers switch languages mid-sentence. Hiwar AI keeps up.</h1>
+      <p class="ar-head" lang="ar" dir="rtl">عملاؤك يخلطون اللغات في نفس الجملة. حوار يفهمهم.</p>
+      <p class="lede">An Arabic-first voice and chat AI for the UAE and GCC. It answers calls and messages in Gulf Arabic, English, Hindi and Urdu, and follows customers when they mix them.</p>
+    </div>
+    <div class="actions">
+      <a class="btn" href="https://github.com/elephantclock/hiwar-ai/issues/new?template=early-access.yml">Request early access</a>
+      <span class="status">In early development. The conversations below show the experience we're building.</span>
+    </div>
+
+    <div class="specimen">
+      <div class="tabs" role="tablist" aria-label="Example conversations">
+        <button role="tab" id="tab-1" aria-controls="p-1" aria-selected="true">Restaurant call: Arabic and English</button>
+        <button role="tab" id="tab-2" aria-controls="p-2" aria-selected="false" tabindex="-1">Telecom call: Hindi and English</button>
+        <button role="tab" id="tab-3" aria-controls="p-3" aria-selected="false" tabindex="-1">Bank chat: Arabizi</button>
+      </div>
+
+      <div class="panel" role="tabpanel" id="p-1" aria-labelledby="tab-1">
+        <div class="turn">
+          <div class="who"><strong>Customer</strong>Inbound call</div>
+          <p class="utt" dir="rtl">
+            <span class="seg ar" lang="ar" style="--i:0"><span>أبي أحجز</span><small>Gulf Arabic</small></span>
+            <span class="seg en" lang="en" dir="ltr" style="--i:1"><span>table for four</span><small>English</small></span>
+            <span class="seg ar" lang="ar" style="--i:2"><span>يوم الخميس بعد المغرب،</span><small>Gulf Arabic</small></span>
+            <span class="seg en" lang="en" dir="ltr" style="--i:3"><span>outdoor if possible.</span><small>English</small></span>
+          </p>
+        </div>
+        <div class="turn">
+          <div class="who"><strong>Hiwar AI</strong>Replies in the same mix</div>
+          <p class="utt" dir="rtl">
+            <span class="seg ar" lang="ar" style="--i:4"><span>أكيد، حجزت لكم الخميس الساعة ٧:٣٠ على الـ</span><small>Gulf Arabic</small></span>
+            <span class="seg en" lang="en" dir="ltr" style="--i:5"><span>terrace.</span><small>English</small></span>
+            <span class="seg ar" lang="ar" style="--i:6"><span>أرسل لك التأكيد على الواتساب؟</span><small>Gulf Arabic</small></span>
+          </p>
+        </div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="p-2" aria-labelledby="tab-2" hidden>
+        <div class="turn">
+          <div class="who"><strong>Customer</strong>Service request</div>
+          <p class="utt">
+            <span class="seg hi" lang="hi" style="--i:0"><span>मेरा इंटरनेट सुबह से बंद है,</span><small>Hindi</small></span>
+            <span class="seg en" lang="en" style="--i:1"><span>router restart</span><small>English</small></span>
+            <span class="seg hi" lang="hi" style="--i:2"><span>भी किया,</span><small>Hindi</small></span>
+            <span class="seg en" lang="en" style="--i:3"><span>but still no signal.</span><small>English</small></span>
+          </p>
+        </div>
+        <div class="turn">
+          <div class="who"><strong>Hiwar AI</strong>Replies in the same mix</div>
+          <p class="utt">
+            <span class="seg hi" lang="hi" style="--i:4"><span>समझ गया।</span><small>Hindi</small></span>
+            <span class="seg en" lang="en" style="--i:5"><span>There's an outage in your area,</span><small>English</small></span>
+            <span class="seg hi" lang="hi" style="--i:6"><span>दो घंटे में ठीक हो जाएगा। मैं आपको SMS भेज दूँ?</span><small>Hindi</small></span>
+          </p>
+        </div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="p-3" aria-labelledby="tab-3" hidden>
+        <div class="turn">
+          <div class="who"><strong>Customer</strong>WhatsApp</div>
+          <p class="utt">
+            <span class="seg az" lang="ar-Latn" style="--i:0"><span>mar7aba, abi a3rf</span><small>Arabizi</small></span>
+            <span class="seg en" lang="en" style="--i:1"><span>credit card limit</span><small>English</small></span>
+            <span class="seg az" lang="ar-Latn" style="--i:2"><span>maly kam?</span><small>Arabizi</small></span>
+          </p>
+          <p class="norm">Understood as: <span lang="ar" dir="rtl">مرحبا، أبي أعرف الـ credit card limit مالي كم؟</span></p>
+        </div>
+        <div class="turn">
+          <div class="who"><strong>Hiwar AI</strong>Replies in the same style</div>
+          <p class="utt">
+            <span class="seg az" lang="ar-Latn" style="--i:3"><span>Hala! El limit 7aqk</span><small>Arabizi</small></span>
+            <span class="seg en" lang="en" style="--i:4"><span>AED 25,000</span><small>English</small></span>
+            <span class="seg az" lang="ar-Latn" style="--i:5"><span>w el mutawafer al7en</span><small>Arabizi</small></span>
+            <span class="seg en" lang="en" style="--i:6"><span>AED 18,400.</span><small>English</small></span>
+          </p>
+        </div>
+      </div>
+      <p class="note">Every phrase is tagged with its language as it's heard, so the agent never has to guess one language for the whole call.</p>
+    </div>
+  </section>
+
+  <section id="languages" class="wrap" aria-labelledby="lang-title">
+    <div class="sign"><h2 id="lang-title">Languages</h2><p lang="ar" dir="rtl">اللغات</p></div>
+    <div class="langs">
+      <div class="lang-primary">
+        <h3><span>Arabic</span><span lang="ar">العربية</span></h3>
+        <p class="role">The primary language. Built around how the Gulf actually speaks, not textbook Arabic alone.</p>
+        <dl class="varieties">
+          <dt>Gulf / Khaleeji<small>Emirati, Saudi Najdi and Hejazi, Kuwaiti, Qatari, Bahraini, Omani</small></dt><dd>Understands and speaks</dd>
+          <dt>Modern Standard Arabic<small>For formal replies in government and banking</small></dt><dd>Understands and speaks</dd>
+          <dt>Egyptian<small>Common across GCC service roles and customers</small></dt><dd>Understands</dd>
+          <dt>Levantine<small>Syrian, Lebanese, Jordanian, Palestinian</small></dt><dd>Understands</dd>
+          <dt>Arabizi<small>Arabic in Latin letters and numbers: 7abibi, 3ala, 5alas</small></dt><dd>Understands in chat</dd>
+          <dt>Gulf Pidgin Arabic<small>Simplified Arabic mixed with Hindi and Urdu</small></dt><dd>Understands</dd>
+        </dl>
+      </div>
+      <div>
+        <div class="lang-other en">
+          <h3><span>English</span></h3>
+          <p>Gulf, Indian, Pakistani, Filipino and British accents. The shared language of the region's service desks.</p>
+        </div>
+        <div class="lang-other hi">
+          <h3><span>Hindi and Urdu</span></h3>
+          <p>One spoken model for both, with each script in chat: Devanagari, Nastaliq and Roman.</p>
+          <div class="script-row"><span lang="hi">नमस्ते</span><span lang="ur" dir="rtl">السلام علیکم</span><span>namaste</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pairs">
+      <h3>Mixes it follows within a single sentence</h3>
+      <ul>
+        <li><span class="swatch ar"></span><span class="swatch en"></span> Arabic and English<small>The everyday mix in Dubai, Abu Dhabi and Riyadh</small></li>
+        <li><span class="swatch hi"></span><span class="swatch en"></span> Hindi or Urdu and English<small>Hinglish, from the region's largest community</small></li>
+        <li><span class="swatch ar"></span><span class="swatch hi"></span> Arabic and Hindi or Urdu<small>Gulf Pidgin, common in services and logistics</small></li>
+        <li><span class="swatch az"></span><span class="swatch en"></span> Arabizi and English<small>How many customers type on WhatsApp</small></li>
+      </ul>
+    </div>
+    <p class="next">Coming next: Malayalam, Tagalog, Bengali, Persian and Tamil, followed by Russian, Mandarin, French and other languages based on demand from each industry.</p>
+  </section>
+
+  <section id="use-cases" class="wrap" aria-labelledby="use-title">
+    <div class="sign"><h2 id="use-title">What it handles</h2><p lang="ar" dir="rtl">ماذا يقدّم</p></div>
+    <div class="uses">
+      <div class="use"><h3>Inbound calls</h3><p>Answers enquiries, takes reservations, checks order status, logs complaints and opens service requests, around the clock.</p></div>
+      <div class="use"><h3>Outbound calls</h3><p>Booking confirmations, appointment reminders, follow-ups and feedback surveys, in each customer's own language.</p></div>
+      <div class="use"><h3>WhatsApp and web chat</h3><p>The same agent on chat, including Arabizi and Roman Urdu, with the conversation kept in one history.</p></div>
+      <div class="use"><h3>Handoff to your team</h3><p>Passes the conversation to a human agent with a transcript and a short summary, so the customer never repeats themselves.</p></div>
+      <div class="use"><h3>Your systems</h3><p>Connects to booking, CRM and ticketing tools to complete tasks, not just answer questions.</p></div>
+      <div class="use"><h3>Your tone</h3><p>Choose whether it mirrors the customer's mix, keeps to formal Arabic, uses Khaleeji only, or uses English only.</p></div>
+    </div>
+    <p class="industries"><strong>Built for</strong> hospitality and restaurants, banking and fintech, telecom, government services, real estate, healthcare, retail and e-commerce.</p>
+  </section>
+
+  <section class="gulf" aria-labelledby="gulf-title">
+    <div class="wrap">
+      <div class="sign"><h2 id="gulf-title">Made for the Gulf</h2><p lang="ar" dir="rtl">صُنع للخليج</p></div>
+      <div class="gulf-grid">
+        <div><h3>Data stays in-country</h3><p>Hosted in UAE and Saudi cloud regions, so customer data doesn't leave the country.</p></div>
+        <div><h3>Designed for local regulation</h3><p>Built with UAE PDPL, Saudi PDPL (SDAIA) and banking regulators such as CBUAE and SAMA in mind.</p></div>
+        <div><h3>Outbound calling rules</h3><p>Outbound campaigns follow TDRA rules in the UAE and CST rules in Saudi Arabia.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="roadmap" class="wrap" aria-labelledby="road-title">
+    <div class="sign"><h2 id="road-title">Roadmap</h2><p lang="ar" dir="rtl">خارطة الطريق</p></div>
+    <ol class="road">
+      <li><div><h3>Gulf speech benchmark</h3><p>A test set of real Gulf call audio covering every language mix, used to choose and tune speech engines.</p></div><span class="now">In progress</span></li>
+      <li><div><h3>Chat agent</h3><p>WhatsApp and web chat with booking and CRM connections.</p></div><span></span></li>
+      <li><div><h3>Inbound voice</h3><p>Live calls with fast replies, interruptions handled naturally, and handoff to your team.</p></div><span></span></li>
+      <li><div><h3>Outbound voice</h3><p>Reminders, confirmations and follow-up calls.</p></div><span></span></li>
+      <li><div><h3>More languages</h3><p>Malayalam, Tagalog, Bengali, Persian and Tamil.</p></div><span></span></li>
+    </ol>
+  </section>
+
+  <section id="license" class="wrap" aria-labelledby="lic-title">
+    <div class="sign"><h2 id="lic-title">Licensing and access</h2><p lang="ar" dir="rtl">الترخيص</p></div>
+    <div class="split">
+      <div>
+        <h3>Source-available</h3>
+        <p>The code is public under the <a href="https://polyformproject.org/licenses/noncommercial/1.0.0">PolyForm Noncommercial License 1.0.0</a>.</p>
+        <ul>
+          <li>Free for personal study, research, education and non-profits</li>
+          <li>Commercial use requires a commercial license</li>
+        </ul>
+        <p>A commercial license also includes Hiwar AI's fine-tuned Gulf Arabic speech models and voices, hosting and support.</p>
+      </div>
+      <div class="cta">
+        <h3>Bring Hiwar AI to your contact centre</h3>
+        <p>We're working with a small group of early partners in the UAE and Saudi Arabia. Tell us about your calls and the languages your customers use.</p>
+        <a class="btn" href="https://github.com/elephantclock/hiwar-ai/issues/new?template=early-access.yml">Request early access</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Hiwar AI <span lang="ar">حوار</span>. Built by <a href="https://elephantclock.tech">Elephant Clock Technology</a>.</span>
+    <a href="https://github.com/elephantclock/hiwar-ai">Source on GitHub</a>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+    function select(tab) {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute('aria-selected', on);
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+      });
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () { select(t); });
+      t.addEventListener('keydown', function (e) {
+        var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!d) return;
+        var n = tabs[(i + d + tabs.length) % tabs.length];
+        select(n); n.focus(); e.preventDefault();
+      });
+    });
+  })();
+</script>
+</body>
+</html>

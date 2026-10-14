@@ -1,0 +1,67 @@
+name: Request early access
+description: Tell us about your contact centre and the languages your customers use.
+title: "Early access: "
+labels: ["early-access"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your interest in Hiwar AI. Issues on this repository are **public**, so please don't include confidential details. We'll follow up to continue privately.
+  - type: input
+    id: company
+    attributes:
+      label: Company
+    validations:
+      required: true
+  - type: dropdown
+    id: industry
+    attributes:
+      label: Industry
+      options:
+        - Hospitality and restaurants
+        - Banking and fintech
+        - Telecom
+        - Government services
+        - Real estate
+        - Healthcare
+        - Retail and e-commerce
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: country
+    attributes:
+      label: Countries you operate in
+      multiple: true
+      options:
+        - UAE
+        - Saudi Arabia
+        - Qatar
+        - Kuwait
+        - Bahrain
+        - Oman
+        - Other
+  - type: checkboxes
+    id: channels
+    attributes:
+      label: Channels you need
+      options:
+        - label: Inbound calls
+        - label: Outbound calls
+        - label: WhatsApp
+        - label: Web chat
+  - type: checkboxes
+    id: languages
+    attributes:
+      label: Languages your customers use
+      options:
+        - label: Gulf Arabic
+        - label: Other Arabic dialects
+        - label: English
+        - label: Hindi / Urdu
+        - label: Other (please add below)
+  - type: textarea
+    id: details
+    attributes:
+      label: Anything else
+      description: Roughly how many calls or chats a month, and what customers usually contact you about.

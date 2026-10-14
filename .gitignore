@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Node
+node_modules/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Customer audio and transcripts must never be committed (UAE/KSA PDPL)
+data/
+recordings/
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
+
+# Model weights live in the private repo
+models/
+*.safetensors
+*.bin
+*.ckpt
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
