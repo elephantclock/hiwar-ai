@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>English Voice PoC Architecture | Hiwar AI</title>
+<meta name="description" content="Architecture for Hiwar AI's browser-based English conversational voice proof of concept: realtime turn-taking, barge-in, business tools and expressive speech.">
+<link rel="canonical" href="https://elephantclock.github.io/hiwar-ai/architecture.html">
+<meta name="theme-color" content="#EDEFEA">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Hiwar AI">
+<meta property="og:title" content="Hiwar AI: English Voice PoC Architecture">
+<meta property="og:description" content="A browser-based call-centre agent with realtime turn-taking, barge-in, tools and expressive speech.">
+<meta property="og:url" content="https://elephantclock.github.io/hiwar-ai/architecture.html">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2312232B'/%3E%3Ctext x='16' y='22' font-size='17' text-anchor='middle' fill='%23EDEFEA' font-family='sans-serif'%3E%D8%AD%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ground: #EDEFEA;
+    --paper: #F8F9F6;
+    --ink: #12232B;
+    --muted: #4C5D63;
+    --rule: #C7CFCB;
+    --red: #A12B2B;
+    --blue: #2E4A9E;
+    --gold: #8C5A0E;
+    --green: #2C6654;
+    --focus: #2E4A9E;
+    --latin: "Readex Pro", system-ui, sans-serif;
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0F1C22;
+      --paper: #16262D;
+      --ink: #E4E9E6;
+      --muted: #A3B1B4;
+      --rule: #2C3E45;
+      --red: #E8857A;
+      --blue: #9DB0F0;
+      --gold: #E2AA5A;
+      --green: #83C6AE;
+      --focus: #9DB0F0;
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--latin);
+    font-weight: 300;
+    font-size: 1.025rem;
+    line-height: 1.6;
+  }
+  a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+  a:hover { text-decoration-thickness: 2px; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 2px; }
+  strong { font-weight: 500; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.9em; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+
+  .skip {
+    position: absolute; left: 1rem; top: -5rem; z-index: 20;
+    background: var(--ink); color: var(--ground); padding: 0.6rem 0.9rem;
+  }
+  .skip:focus { top: 1rem; }
+  .wrap { max-width: 78rem; margin: 0 auto; padding-inline: clamp(1rem, 4vw, 2.5rem); }
+
+  .top {
+    padding-block: 1.25rem; display: flex; align-items: center;
+    justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  }
+  .mark { display: flex; align-items: baseline; gap: 0.6rem; text-decoration: none; }
+  .mark-en { font-weight: 600; font-size: 1.2rem; letter-spacing: -0.01em; }
+  .mark-ar { font-weight: 600; font-size: 1.35rem; color: var(--red); }
+  .top nav { display: flex; gap: 1.4rem; flex-wrap: wrap; font-size: 0.95rem; font-weight: 400; }
+  .top nav a { text-decoration: none; }
+  .top nav a:hover, .top nav a[aria-current="page"] { text-decoration: underline; }
+
+  .hero { padding-block: clamp(2.5rem, 6vw, 5rem) clamp(3.5rem, 7vw, 6rem); }
+  .eyebrow {
+    margin: 0 0 1rem; color: var(--red); font-size: 0.82rem;
+    font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  h1 {
+    margin: 0; max-width: 18ch; font-size: clamp(2.45rem, 6vw, 5.25rem);
+    line-height: 0.98; letter-spacing: -0.045em; font-weight: 500;
+  }
+  .lede {
+    max-width: 66ch; margin: 1.5rem 0 0; color: var(--muted);
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+  }
+  .scope {
+    display: flex; gap: 0.65rem; flex-wrap: wrap; margin-top: 1.75rem;
+    list-style: none; padding: 0;
+  }
+  .scope li {
+    border: 1px solid var(--rule); background: var(--paper); border-radius: 99px;
+    padding: 0.35rem 0.75rem; font-size: 0.84rem; font-weight: 400;
+  }
+
+  section { padding-block: clamp(3.5rem, 8vw, 6.5rem); }
+  .sign {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline;
+    gap: 0.5rem 2rem; border-top: 2px solid var(--ink); padding-top: 0.9rem;
+    margin-bottom: 2.25rem;
+  }
+  .sign h2 {
+    margin: 0; font-size: clamp(1.65rem, 3.2vw, 2.4rem); font-weight: 500;
+    letter-spacing: -0.02em; line-height: 1.15;
+  }
+  .sign p { margin: 0; color: var(--muted); font-size: 0.92rem; text-align: right; }
+
+  /* Primary system diagram */
+  .diagram-shell {
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 14px;
+    padding: clamp(1.15rem, 3vw, 2.2rem); overflow: hidden;
+  }
+  .boundary-labels {
+    display: grid; grid-template-columns: 1.05fr 1.25fr 3.2fr; gap: 1.5rem;
+    margin-bottom: 0.75rem; color: var(--muted); font-size: 0.75rem;
+    text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;
+  }
+  .boundary-labels span:nth-child(2), .boundary-labels span:nth-child(3) {
+    border-left: 1px dashed var(--rule); padding-left: 1.5rem;
+  }
+  .flow {
+    display: grid;
+    grid-template-columns: minmax(8rem, 1.05fr) 2rem minmax(9.5rem, 1.25fr) 2rem minmax(8rem, 1fr) 2rem minmax(9rem, 1.15fr) 2rem minmax(8rem, 1fr);
+    align-items: stretch;
+  }
+  .node {
+    position: relative; min-width: 0; border: 1px solid var(--rule); border-top: 4px solid var(--node-color);
+    border-radius: 9px; background: var(--ground); padding: 1rem;
+  }
+  .node.browser { --node-color: var(--blue); }
+  .node.gateway { --node-color: var(--red); }
+  .node.speech { --node-color: var(--gold); }
+  .node.agent { --node-color: var(--green); }
+  .node.voice { --node-color: var(--gold); }
+  .node .num {
+    display: inline-grid; place-items: center; width: 1.65rem; height: 1.65rem;
+    border-radius: 50%; color: var(--ground); background: var(--node-color);
+    font-size: 0.78rem; font-weight: 600; margin-bottom: 0.75rem;
+  }
+  .node h3 { margin: 0 0 0.45rem; font-size: 1.05rem; line-height: 1.25; font-weight: 500; }
+  .node .service { display: block; color: var(--node-color); font-size: 0.78rem; font-weight: 600; margin-bottom: 0.65rem; }
+  .node ul { margin: 0; padding-left: 1rem; color: var(--muted); font-size: 0.82rem; line-height: 1.55; }
+  .arrow { display: grid; place-items: center; color: var(--muted); font-size: 1.4rem; }
+  .arrow::after { content: "→"; }
+  .return-path {
+    margin: 1.25rem 0 0 calc((100% - 8rem) / 8); padding-top: 0.85rem;
+    border-top: 1px dashed var(--blue); color: var(--blue); text-align: center;
+    font-size: 0.82rem; font-weight: 500;
+  }
+  .return-path span { background: var(--paper); padding-inline: 0.75rem; }
+
+  .branch {
+    display: grid; grid-template-columns: 1fr minmax(16rem, 1.15fr) 1fr;
+    gap: 1rem; margin-top: 1.75rem; align-items: start;
+  }
+  .branch-line { grid-column: 2; height: 1.5rem; border-left: 1px dashed var(--green); justify-self: center; }
+  .toolbox {
+    grid-column: 2; border: 1px solid var(--rule); border-radius: 9px;
+    background: var(--ground); padding: 1rem 1.1rem;
+  }
+  .toolbox h3 { margin: 0 0 0.35rem; font-size: 1rem; font-weight: 500; }
+  .toolbox p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+  .tools {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.65rem;
+    margin-top: 0.8rem;
+  }
+  .tools span {
+    padding: 0.55rem; border: 1px solid var(--rule); border-radius: 6px;
+    text-align: center; font-size: 0.75rem; font-weight: 500;
+  }
+  .legend {
+    display: flex; gap: 0.8rem 1.35rem; flex-wrap: wrap; margin: 1.25rem 0 0;
+    padding: 0; list-style: none; color: var(--muted); font-size: 0.78rem;
+  }
+  .legend li::before {
+    content: ""; display: inline-block; width: 0.65rem; height: 0.65rem;
+    margin-right: 0.4rem; border-radius: 2px; background: var(--key);
+  }
+  .legend .device { --key: var(--blue); }
+  .legend .control { --key: var(--red); }
+  .legend .model { --key: var(--gold); }
+  .legend .logic { --key: var(--green); }
+
+  /* Realtime behavior */
+  .dark { background: var(--ink); color: var(--ground); }
+  .dark .sign { border-top-color: var(--ground); }
+  .dark .sign p { color: color-mix(in srgb, var(--ground) 70%, transparent); }
+  .loops { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+  .loop {
+    border: 1px solid color-mix(in srgb, var(--ground) 25%, transparent);
+    border-radius: 10px; padding: 1.35rem;
+  }
+  .loop .tag { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.65; }
+  .loop h3 { margin: 0.65rem 0 0.55rem; font-size: 1.15rem; font-weight: 500; }
+  .loop p { margin: 0; opacity: 0.76; font-size: 0.94rem; }
+  .mini-flow {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem;
+    margin-top: 1rem; font-size: 0.75rem;
+  }
+  .mini-flow span { border: 1px solid currentColor; border-radius: 5px; padding: 0.25rem 0.45rem; }
+  .mini-flow b { font-weight: 400; opacity: 0.5; }
+
+  /* Turn sequence */
+  .timeline { list-style: none; padding: 0; margin: 0; counter-reset: turn; }
+  .timeline li {
+    counter-increment: turn; display: grid; grid-template-columns: 3rem minmax(0, 1fr) minmax(10rem, 0.45fr);
+    gap: 1rem; align-items: start; padding: 1.15rem 0; border-top: 1px solid var(--rule);
+  }
+  .timeline li::before {
+    content: counter(turn); display: grid; place-items: center; width: 2rem; height: 2rem;
+    color: var(--ground); background: var(--ink); border-radius: 50%; font-size: 0.78rem; font-weight: 600;
+  }
+  .timeline h3 { margin: 0; font-size: 1.03rem; font-weight: 500; }
+  .timeline p { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.9rem; }
+  .timeline code { color: var(--blue); overflow-wrap: anywhere; }
+  .owner { color: var(--muted); font-size: 0.82rem; text-align: right; }
+
+  /* Boundaries */
+  .boundaries { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  .boundary {
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 10px;
+    padding: 1.35rem;
+  }
+  .boundary h3 { margin: 0 0 0.55rem; font-size: 1.08rem; font-weight: 500; }
+  .boundary p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+  .boundary.local { border-top: 4px solid var(--green); }
+  .boundary.external { border-top: 4px solid var(--gold); }
+  .caution {
+    margin-top: 1.25rem; border-left: 4px solid var(--red); padding: 0.9rem 1rem;
+    background: var(--paper); color: var(--muted); font-size: 0.9rem;
+  }
+  .caution strong { color: var(--ink); }
+
+  footer { padding-block: 2.5rem 3rem; border-top: 1px solid var(--rule); font-size: 0.9rem; color: var(--muted); }
+  footer .wrap { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+
+  @media (max-width: 1040px) {
+    .boundary-labels { display: none; }
+    .flow { grid-template-columns: 1fr; gap: 0; }
+    .arrow { min-height: 2rem; }
+    .arrow::after { content: "↓"; }
+    .return-path { margin: 1.25rem 0 0; }
+    .branch { grid-template-columns: 1fr; }
+    .branch-line, .toolbox { grid-column: 1; }
+  }
+
+  @media (max-width: 760px) {
+    .sign { grid-template-columns: 1fr; }
+    .sign p { text-align: left; }
+    .loops, .boundaries { grid-template-columns: 1fr; }
+    .tools { grid-template-columns: 1fr; }
+    .timeline li { grid-template-columns: 2.5rem 1fr; }
+    .owner { grid-column: 2; text-align: left; }
+  }
+
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#content">Skip to architecture</a>
+
+<header class="wrap top">
+  <a class="mark" href="./" aria-label="Hiwar AI home">
+    <span class="mark-en">Hiwar AI</span><span class="mark-ar" lang="ar">حوار</span>
+  </a>
+  <nav aria-label="Main">
+    <a href="./">Overview</a>
+    <a href="architecture.html" aria-current="page">Architecture</a>
+    <a href="https://github.com/elephantclock/hiwar-ai">GitHub</a>
+  </nav>
+</header>
+
+<main id="content">
+  <section class="hero wrap" aria-labelledby="page-title">
+    <p class="eyebrow">Browser proof of concept</p>
+    <h1 id="page-title">A call-centre conversation, without the phone line.</h1>
+    <p class="lede">This architecture turns a browser tab into an English voice call: the customer speaks naturally, the agent listens, reasons, uses business tools and answers with an appropriate emotional tone. The PoC uses free-tier hosted models and keeps all credentials on the server.</p>
+    <ul class="scope" aria-label="Proof of concept capabilities">
+      <li>Realtime turn-taking</li>
+      <li>Barge-in</li>
+      <li>Expressive speech</li>
+      <li>Mock CRM tools</li>
+      <li>Live transcript</li>
+    </ul>
+  </section>
+
+  <section class="wrap" aria-labelledby="system-title">
+    <div class="sign">
+      <h2 id="system-title">System architecture</h2>
+      <p>Audio in → action → expressive audio out</p>
+    </div>
+
+    <div class="diagram-shell" aria-describedby="diagram-description">
+      <p id="diagram-description" class="sr-only">The customer speaks through a browser. A Hiwar realtime gateway detects turns and sends completed speech to hosted Whisper. The transcript passes to a conversation agent, which can use mock business tools and selects an emotional tone. Orpheus converts the response into expressive English speech that returns to the browser. Local voice detection can interrupt playback immediately.</p>
+      <div class="boundary-labels" aria-hidden="true">
+        <span>Customer device</span>
+        <span>Hiwar application</span>
+        <span>Hosted model services</span>
+      </div>
+
+      <div class="flow">
+        <article class="node browser">
+          <span class="num">1</span>
+          <h3>Web call interface</h3>
+          <span class="service">Browser · Web Audio API</span>
+          <ul>
+            <li>Microphone capture</li>
+            <li>Echo cancellation</li>
+            <li>Playback queue</li>
+            <li>Call controls</li>
+          </ul>
+        </article>
+        <span class="arrow" aria-hidden="true"></span>
+
+        <article class="node gateway">
+          <span class="num">2</span>
+          <h3>Realtime session controller</h3>
+          <span class="service">Hiwar · WebSocket gateway</span>
+          <ul>
+            <li>Voice activity detection</li>
+            <li>Turn state</li>
+            <li>Cancellation</li>
+            <li>Latency events</li>
+          </ul>
+        </article>
+        <span class="arrow" aria-hidden="true"></span>
+
+        <article class="node speech">
+          <span class="num">3</span>
+          <h3>Speech recognition</h3>
+          <span class="service">Groq · Whisper Large V3 Turbo</span>
+          <ul>
+            <li>Audio to transcript</li>
+            <li>English recognition</li>
+            <li>Prompted vocabulary</li>
+          </ul>
+        </article>
+        <span class="arrow" aria-hidden="true"></span>
+
+        <article class="node agent">
+          <span class="num">4</span>
+          <h3>Conversation agent</h3>
+          <span class="service">Groq · Qwen or GPT-OSS</span>
+          <ul>
+            <li>Intent and sentiment</li>
+            <li>Tool decisions</li>
+            <li>Short spoken reply</li>
+            <li><code>{ tone, text }</code></li>
+          </ul>
+        </article>
+        <span class="arrow" aria-hidden="true"></span>
+
+        <article class="node voice">
+          <span class="num">5</span>
+          <h3>Expressive voice</h3>
+          <span class="service">Groq · Orpheus English</span>
+          <ul>
+            <li>Vocal directions</li>
+            <li>Sentence-sized audio</li>
+            <li>Natural call cadence</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="return-path" aria-hidden="true"><span>← WAV audio returns through the gateway to the browser playback queue</span></div>
+
+      <div class="branch">
+        <span class="branch-line" aria-hidden="true"></span>
+        <aside class="toolbox">
+          <h3>Business and safety tools</h3>
+          <p>The agent can read from or act on controlled application functions. The PoC uses local mock data.</p>
+          <div class="tools" aria-label="Example agent tools">
+            <span>Order lookup</span>
+            <span>Knowledge base</span>
+            <span>Escalation</span>
+          </div>
+        </aside>
+      </div>
+
+      <ul class="legend" aria-label="Architecture legend">
+        <li class="device">Customer device</li>
+        <li class="control">Hiwar control plane</li>
+        <li class="model">Model service</li>
+        <li class="logic">Business logic</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="dark" aria-labelledby="realtime-title">
+    <div class="wrap">
+      <div class="sign">
+        <h2 id="realtime-title">What makes it feel realtime</h2>
+        <p>Three control loops run around the model calls</p>
+      </div>
+      <div class="loops">
+        <article class="loop">
+          <span class="tag">Local loop · immediate</span>
+          <h3>Barge-in</h3>
+          <p>The browser detects new customer speech, stops audio playback immediately and tells the gateway to cancel the current agent turn.</p>
+          <div class="mini-flow" aria-label="Barge-in sequence">
+            <span>voice detected</span><b>→</b><span>stop playback</span><b>→</b><span>cancel turn</span>
+          </div>
+        </article>
+        <article class="loop">
+          <span class="tag">Conversation loop · contextual</span>
+          <h3>Emotion selection</h3>
+          <p>The agent chooses a restrained service tone from the caller's words and context. It responds calmly to anger rather than imitating it.</p>
+          <div class="mini-flow" aria-label="Emotion selection sequence">
+            <span>sentiment</span><b>→</b><span>tone policy</span><b>→</b><span>voice direction</span>
+          </div>
+        </article>
+        <article class="loop">
+          <span class="tag">Speech loop · progressive</span>
+          <h3>Sentence streaming</h3>
+          <p>The agent writes concise sentences. Each completed sentence moves to speech while the next sentence is still being prepared.</p>
+          <div class="mini-flow" aria-label="Sentence streaming sequence">
+            <span>text chunk</span><b>→</b><span>speech</span><b>→</b><span>queued audio</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" aria-labelledby="turn-title">
+    <div class="sign">
+      <h2 id="turn-title">One customer turn</h2>
+      <p>The event sequence behind a natural reply</p>
+    </div>
+    <ol class="timeline">
+      <li>
+        <div><h3>Listen</h3><p>The browser captures mono audio while local voice detection tracks speech and silence.</p></div>
+        <span class="owner">Browser</span>
+      </li>
+      <li>
+        <div><h3>Close the turn</h3><p>A short silence marks the end of the utterance. The gateway packages only that turn for recognition.</p></div>
+        <span class="owner">Hiwar gateway</span>
+      </li>
+      <li>
+        <div><h3>Understand</h3><p>Whisper returns the caller's words; the transcript appears in the call interface.</p></div>
+        <span class="owner">Speech model</span>
+      </li>
+      <li>
+        <div><h3>Reason and act</h3><p>The conversation agent considers history, calls <code>lookup_order</code> when needed and produces structured tone plus text.</p></div>
+        <span class="owner">Agent + tools</span>
+      </li>
+      <li>
+        <div><h3>Speak</h3><p>Short reply chunks are synthesized with directions such as <code>[warm]</code> or <code>[calm and apologetic]</code>.</p></div>
+        <span class="owner">Voice model</span>
+      </li>
+      <li>
+        <div><h3>Yield when interrupted</h3><p>New customer speech clears queued audio and starts a fresh turn without waiting for the agent to finish.</p></div>
+        <span class="owner">Browser + gateway</span>
+      </li>
+    </ol>
+  </section>
+
+  <section class="wrap" aria-labelledby="boundary-title">
+    <div class="sign">
+      <h2 id="boundary-title">Deployment boundary</h2>
+      <p>What stays local and what leaves the application</p>
+    </div>
+    <div class="boundaries">
+      <article class="boundary local">
+        <h3>Inside the Hiwar PoC</h3>
+        <p>API credentials, session state, mock customer records, tool permissions, cancellation logic, transcript display and latency measurements remain in the browser or local server.</p>
+      </article>
+      <article class="boundary external">
+        <h3>Sent to hosted model APIs</h3>
+        <p>Caller audio is sent for speech recognition. Transcript and conversation context are sent for reasoning. Approved reply text and its tone direction are sent for voice generation.</p>
+      </article>
+    </div>
+    <p class="caution"><strong>PoC boundary:</strong> free-tier APIs are appropriate for demonstration, not a production contact centre. They provide no commitment to availability, capacity or UAE/KSA data residency. Production deployment needs contracted services, retention controls and measured regional performance.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Hiwar AI <span lang="ar">حوار</span>. Architecture for the English browser PoC.</span>
+    <span><a href="./">Project overview</a> · <a href="https://github.com/elephantclock/hiwar-ai">Source on GitHub</a></span>
+  </div>
+</footer>
+</body>
+</html>
