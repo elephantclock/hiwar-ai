@@ -8,6 +8,14 @@ Hiwar AI (حوار, "dialogue") is a voice and chat AI agent platform built for 
 >
 > 🌐 **Website:** https://elephantclock.github.io/hiwar-ai/ · **Early access:** [request here](https://github.com/elephantclock/hiwar-ai/issues/new?template=early-access.yml)
 
+### English browser voice PoC
+
+The engineer-ready implementation scaffold lives in [`poc/`](poc/README.md).
+It includes a FastAPI session/WebSocket backend, AudioWorklet PCM capture,
+provider adapters, a server-owned tool registry, mock CRM data and CI checks.
+The detailed system design is published in the
+[technical architecture](https://elephantclock.github.io/hiwar-ai/architecture.html).
+
 ---
 
 ## Why Hiwar AI

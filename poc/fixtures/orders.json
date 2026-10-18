@@ -1,0 +1,23 @@
+[
+  {
+    "order_id": "ORD-1001",
+    "customer_name": "Amina",
+    "status": "out_for_delivery",
+    "eta": "today, 4–6 PM",
+    "items": ["Wireless headphones"]
+  },
+  {
+    "order_id": "ORD-1002",
+    "customer_name": "Omar",
+    "status": "processing",
+    "eta": "tomorrow",
+    "items": ["Coffee grinder", "Paper filters"]
+  },
+  {
+    "order_id": "ORD-1003",
+    "customer_name": "Maya",
+    "status": "delivered",
+    "eta": null,
+    "items": ["Desk lamp"]
+  }
+]

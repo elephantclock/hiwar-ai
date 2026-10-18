@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Hiwar browser voice agent engineering proof of concept">
+  <title>Hiwar Voice PoC</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <a class="brand" href="https://elephantclock.github.io/hiwar-ai/">Hiwar <span lang="ar">حوار</span></a>
+      <p>English voice-agent engineering shell</p>
+    </header>
+
+    <section class="call-card" aria-labelledby="call-title">
+      <div class="eyebrow">Local browser PoC</div>
+      <h1 id="call-title">Test the realtime transport.</h1>
+      <p class="intro">
+        Connect, allow microphone access, then record one turn. The current scaffold
+        validates PCM capture, WebSocket framing, session state and interruption.
+      </p>
+
+      <div class="status-row" aria-live="polite">
+        <span class="pulse" aria-hidden="true"></span>
+        <strong id="status" data-tone="idle">Not connected</strong>
+      </div>
+
+      <div class="controls">
+        <button id="connect" type="button">Connect call</button>
+        <button id="record" type="button" disabled>Start speaking</button>
+        <button id="interrupt" class="secondary" type="button" disabled>Interrupt</button>
+      </div>
+
+      <div class="transcript">
+        <span>Turn output</span>
+        <p id="transcript">The transcript and agent response will appear here.</p>
+      </div>
+    </section>
+
+    <aside class="event-panel" aria-labelledby="events-title">
+      <h2 id="events-title">Wire events</h2>
+      <ol id="events" reversed></ol>
+      <a href="https://elephantclock.github.io/hiwar-ai/architecture.html">Read the technical architecture →</a>
+    </aside>
+  </main>
+  <script type="module" src="./call.js"></script>
+</body>
+</html>

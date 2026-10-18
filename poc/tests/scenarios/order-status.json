@@ -1,0 +1,17 @@
+{
+  "name": "caller checks an existing order",
+  "language": "en",
+  "fixture": "ORD-1001",
+  "turns": [
+    {
+      "caller": "Hi, where is my order ORD-1001?",
+      "expected_tool": "lookup_order",
+      "expected_state": "out_for_delivery"
+    }
+  ],
+  "assertions": {
+    "must_mention": ["today"],
+    "must_not_invent_customer_data": true,
+    "max_agent_sentences": 2
+  }
+}
