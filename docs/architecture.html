@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>English Voice PoC Architecture | Hiwar AI</title>
-<meta name="description" content="Architecture for Hiwar AI's browser-based English conversational voice proof of concept: realtime turn-taking, barge-in, business tools and expressive speech.">
+<title>English Voice PoC Engineering Architecture | Hiwar AI</title>
+<meta name="description" content="Engineer-facing architecture for Hiwar AI's browser-based English voice proof of concept: media transport, session state, barge-in, tools, expressive speech, failure handling and observability.">
 <link rel="canonical" href="https://elephantclock.github.io/hiwar-ai/architecture.html">
 <meta name="theme-color" content="#EDEFEA">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Hiwar AI">
-<meta property="og:title" content="Hiwar AI: English Voice PoC Architecture">
-<meta property="og:description" content="A browser-based call-centre agent with realtime turn-taking, barge-in, tools and expressive speech.">
+<meta property="og:title" content="Hiwar AI: English Voice PoC Engineering Architecture">
+<meta property="og:description" content="A build-ready technical design for a browser call-centre agent with realtime turn-taking, barge-in, tools and expressive speech.">
 <meta property="og:url" content="https://elephantclock.github.io/hiwar-ai/architecture.html">
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2312232B'/%3E%3Ctext x='16' y='22' font-size='17' text-anchor='middle' fill='%23EDEFEA' font-family='sans-serif'%3E%D8%AD%3C/text%3E%3C/svg%3E">
@@ -111,6 +111,13 @@
     border: 1px solid var(--rule); background: var(--paper); border-radius: 99px;
     padding: 0.35rem 0.75rem; font-size: 0.84rem; font-weight: 400;
   }
+  .toc {
+    margin-top: 2.4rem; border-top: 1px solid var(--rule); padding-top: 1.1rem;
+  }
+  .toc h2 { margin: 0 0 0.65rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; color: var(--muted); }
+  .toc ol { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem 1.25rem; margin: 0; padding-left: 1.2rem; font-size: 0.85rem; }
+  .toc a { text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
 
   section { padding-block: clamp(3.5rem, 8vw, 6.5rem); }
   .sign {
@@ -234,6 +241,108 @@
   .timeline code { color: var(--blue); overflow-wrap: anywhere; }
   .owner { color: var(--muted); font-size: 0.82rem; text-align: right; }
 
+  /* Engineering specification */
+  .decision-grid, .component-grid, .contract-grid, .metric-grid {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.1rem;
+  }
+  .decision, .component, .contract, .metric {
+    min-width: 0; background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 1.2rem;
+  }
+  .decision h3, .component h3, .contract h3, .metric h3 {
+    margin: 0 0 0.45rem; font-size: 1.05rem; line-height: 1.3; font-weight: 500;
+  }
+  .decision p, .component p, .contract p, .metric p { margin: 0; color: var(--muted); font-size: 0.88rem; }
+  .decision .label, .component .label {
+    display: block; margin-bottom: 0.55rem; color: var(--blue); font-size: 0.72rem;
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+  }
+  .decision strong { color: var(--ink); }
+  .note-box {
+    margin: 1.25rem 0 0; padding: 1rem 1.1rem; border-left: 4px solid var(--blue);
+    background: var(--paper); color: var(--muted); font-size: 0.9rem;
+  }
+  .note-box strong { color: var(--ink); }
+
+  .state-machine {
+    display: flex; align-items: stretch; gap: 0.5rem; overflow-x: auto; padding: 0.25rem 0 0.85rem;
+    scrollbar-width: thin;
+  }
+  .state {
+    flex: 0 0 8.5rem; display: flex; flex-direction: column; border: 1px solid var(--rule);
+    border-top: 4px solid var(--state-color, var(--blue)); border-radius: 8px; background: var(--paper); padding: 0.8rem;
+  }
+  .state.capture { --state-color: var(--blue); }
+  .state.compute { --state-color: var(--gold); }
+  .state.action { --state-color: var(--green); }
+  .state.output { --state-color: var(--red); }
+  .state h3 { margin: 0; font-size: 0.82rem; line-height: 1.25; font-weight: 600; }
+  .state p { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.72rem; line-height: 1.4; }
+  .state-arrow { flex: 0 0 1rem; display: grid; place-items: center; color: var(--muted); }
+  .state-arrow::after { content: "→"; }
+  .interrupt {
+    margin-top: 1rem; border: 1px dashed var(--red); border-radius: 8px; padding: 0.9rem 1rem;
+    display: grid; grid-template-columns: auto 1fr; gap: 0.8rem; align-items: start;
+  }
+  .interrupt strong { color: var(--red); font-size: 0.82rem; }
+  .interrupt p { margin: 0; color: var(--muted); font-size: 0.84rem; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--paper); }
+  table { width: 100%; border-collapse: collapse; min-width: 42rem; font-size: 0.84rem; }
+  th, td { padding: 0.8rem 0.9rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--rule); }
+  th { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; }
+  tr:last-child td { border-bottom: 0; }
+  td code { color: var(--blue); overflow-wrap: anywhere; }
+
+  .code-block, .sequence, .repo-tree {
+    margin: 0; padding: 1rem 1.1rem; background: #0B171C; color: #D8E1DE; border-radius: 9px;
+    overflow-x: auto; font: 0.78rem/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    white-space: pre; tab-size: 2;
+  }
+  .contract-grid { margin-top: 1.1rem; }
+  .contract .code-block { margin-top: 0.8rem; }
+  .contract .direction { color: var(--red); font-size: 0.75rem; font-weight: 600; }
+
+  .pipeline {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.1rem;
+  }
+  .pipeline article { border-top: 3px solid var(--pipeline-color); padding-top: 0.85rem; }
+  .pipeline article:nth-child(1) { --pipeline-color: var(--blue); }
+  .pipeline article:nth-child(2) { --pipeline-color: var(--green); }
+  .pipeline article:nth-child(3) { --pipeline-color: var(--gold); }
+  .pipeline h3 { margin: 0 0 0.4rem; font-size: 1.05rem; font-weight: 500; }
+  .pipeline ul, .component ul { margin: 0; padding-left: 1.05rem; color: var(--muted); font-size: 0.86rem; }
+  .pipeline li + li, .component li + li { margin-top: 0.35rem; }
+  .config {
+    margin-top: 1.25rem; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    border: 1px solid var(--rule); border-radius: 9px; overflow: hidden;
+  }
+  .config div { padding: 0.85rem; background: var(--paper); border-right: 1px solid var(--rule); }
+  .config div:last-child { border-right: 0; }
+  .config dt { color: var(--muted); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .config dd { margin: 0.2rem 0 0; font-size: 0.82rem; font-weight: 500; }
+
+  .component-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .component { border-top: 4px solid var(--green); }
+  .component code { color: var(--blue); }
+  .sequence { margin-top: 1.25rem; }
+
+  .tone-map { display: grid; grid-template-columns: repeat(5, 1fr); margin-top: 1rem; border: 1px solid var(--rule); border-radius: 9px; overflow: hidden; }
+  .tone-map div { padding: 0.85rem; background: var(--paper); border-right: 1px solid var(--rule); }
+  .tone-map div:last-child { border-right: 0; }
+  .tone-map strong { display: block; font-size: 0.8rem; }
+  .tone-map span { display: block; color: var(--muted); font-size: 0.72rem; margin-top: 0.25rem; }
+
+  .metric-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .metric strong { display: block; color: var(--red); font-size: 1.15rem; font-weight: 500; margin-bottom: 0.25rem; }
+  .metric code { color: var(--ink); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  .subhead { margin: 0 0 0.8rem; font-size: 1.15rem; font-weight: 500; }
+  .checklist { margin: 0; padding-left: 1.15rem; color: var(--muted); font-size: 0.88rem; }
+  .checklist li + li { margin-top: 0.45rem; }
+  .references { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.7rem 1.5rem; }
+  .references li { border-top: 1px solid var(--rule); padding-top: 0.65rem; font-size: 0.85rem; }
+  .references small { display: block; color: var(--muted); }
+
   /* Boundaries */
   .boundaries { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
   .boundary {
@@ -261,15 +370,24 @@
     .return-path { margin: 1.25rem 0 0; }
     .branch { grid-template-columns: 1fr; }
     .branch-line, .toolbox { grid-column: 1; }
+    .component-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .tone-map { grid-template-columns: 1fr 1fr; }
+    .tone-map div { border-bottom: 1px solid var(--rule); }
   }
 
   @media (max-width: 760px) {
     .sign { grid-template-columns: 1fr; }
     .sign p { text-align: left; }
-    .loops, .boundaries { grid-template-columns: 1fr; }
+    .loops, .boundaries, .decision-grid, .component-grid, .contract-grid, .metric-grid, .pipeline, .two-col { grid-template-columns: 1fr; }
     .tools { grid-template-columns: 1fr; }
     .timeline li { grid-template-columns: 2.5rem 1fr; }
     .owner { grid-column: 2; text-align: left; }
+    .toc ol { grid-template-columns: 1fr 1fr; }
+    .config { grid-template-columns: 1fr 1fr; }
+    .config div { border-bottom: 1px solid var(--rule); }
+    .tone-map, .references { grid-template-columns: 1fr; }
+    .tone-map div { border-right: 0; }
   }
 
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
@@ -291,19 +409,37 @@
 
 <main id="content">
   <section class="hero wrap" aria-labelledby="page-title">
-    <p class="eyebrow">Browser proof of concept</p>
-    <h1 id="page-title">A call-centre conversation, without the phone line.</h1>
-    <p class="lede">This architecture turns a browser tab into an English voice call: the customer speaks naturally, the agent listens, reasons, uses business tools and answers with an appropriate emotional tone. The PoC uses free-tier hosted models and keeps all credentials on the server.</p>
+    <p class="eyebrow">Engineering reference · browser PoC</p>
+    <h1 id="page-title">Build the browser voice agent.</h1>
+    <p class="lede">A build-ready technical architecture for an English call-centre simulation: browser media capture, WebSocket transport, utterance endpointing, hosted speech and reasoning adapters, local business tools, expressive synthesis, cancellation, failure handling and measurable latency.</p>
     <ul class="scope" aria-label="Proof of concept capabilities">
-      <li>Realtime turn-taking</li>
+      <li>Realtime turn-based</li>
       <li>Barge-in</li>
       <li>Expressive speech</li>
       <li>Mock CRM tools</li>
       <li>Live transcript</li>
+      <li>Server-held credentials</li>
     </ul>
+    <nav class="toc" aria-label="Technical architecture sections">
+      <h2>On this page</h2>
+      <ol>
+        <li><a href="#system">System topology</a></li>
+        <li><a href="#realtime">Realtime loops</a></li>
+        <li><a href="#state">Session state</a></li>
+        <li><a href="#protocol">Wire protocol</a></li>
+        <li><a href="#media">Media pipeline</a></li>
+        <li><a href="#runtime">Backend runtime</a></li>
+        <li><a href="#providers">Model adapters</a></li>
+        <li><a href="#tools">Agent and tools</a></li>
+        <li><a href="#sequence">Turn sequence</a></li>
+        <li><a href="#reliability">Reliability</a></li>
+        <li><a href="#delivery">Code and testing</a></li>
+        <li><a href="#boundary">Boundaries</a></li>
+      </ol>
+    </nav>
   </section>
 
-  <section class="wrap" aria-labelledby="system-title">
+  <section id="system" class="wrap" aria-labelledby="system-title">
     <div class="sign">
       <h2 id="system-title">System architecture</h2>
       <p>Audio in → action → expressive audio out</p>
@@ -403,9 +539,32 @@
         <li class="logic">Business logic</li>
       </ul>
     </div>
+
+    <div class="decision-grid" style="margin-top: 1.25rem">
+      <article class="decision">
+        <span class="label">Decision 01 · interaction model</span>
+        <h3>Realtime turn-based, not native full duplex</h3>
+        <p>The browser captures continuously, but the selected Whisper endpoint receives a completed utterance file. Fast endpointing, streamed agent text, sentence-level synthesis and immediate cancellation create the call-like experience.</p>
+      </article>
+      <article class="decision">
+        <span class="label">Decision 02 · trust boundary</span>
+        <h3>All provider access goes through the server</h3>
+        <p>The browser never receives a Groq key. It holds only a short-lived Hiwar session token and communicates with the same-origin gateway over one WebSocket.</p>
+      </article>
+      <article class="decision">
+        <span class="label">Decision 03 · provider isolation</span>
+        <h3>Speech, reasoning and voice are adapters</h3>
+        <p>Application interfaces isolate Groq-specific payloads. Local Whisper, a different chat model or local TTS can replace a provider without changing the browser protocol or session state machine.</p>
+      </article>
+      <article class="decision">
+        <span class="label">Decision 04 · PoC persistence</span>
+        <h3>Session memory only; no raw audio retained</h3>
+        <p>Conversation state lives in one backend process and disappears when the call ends. Structured latency events may be logged; raw audio and transcripts are off by default.</p>
+      </article>
+    </div>
   </section>
 
-  <section class="dark" aria-labelledby="realtime-title">
+  <section id="realtime" class="dark" aria-labelledby="realtime-title">
     <div class="wrap">
       <div class="sign">
         <h2 id="realtime-title">What makes it feel realtime</h2>
@@ -440,7 +599,236 @@
     </div>
   </section>
 
-  <section class="wrap" aria-labelledby="turn-title">
+  <section id="state" class="wrap" aria-labelledby="state-title">
+    <div class="sign">
+      <h2 id="state-title">Session state and cancellation</h2>
+      <p>One actor owns each connected browser call</p>
+    </div>
+    <div class="state-machine" aria-label="Session state progression">
+      <article class="state capture"><h3>LISTENING</h3><p>Accept PCM frames; maintain VAD pre-roll.</p></article>
+      <span class="state-arrow" aria-hidden="true"></span>
+      <article class="state capture"><h3>ENDPOINTING</h3><p>Silence closes and freezes one utterance.</p></article>
+      <span class="state-arrow" aria-hidden="true"></span>
+      <article class="state compute"><h3>TRANSCRIBING</h3><p>Encode an in-memory WAV and call STT.</p></article>
+      <span class="state-arrow" aria-hidden="true"></span>
+      <article class="state compute"><h3>THINKING</h3><p>Run agent loop against transcript and history.</p></article>
+      <span class="state-arrow" aria-hidden="true"></span>
+      <article class="state action"><h3>TOOL_RUNNING</h3><p>Validate and execute allow-listed functions.</p></article>
+      <span class="state-arrow" aria-hidden="true"></span>
+      <article class="state output"><h3>SYNTHESIZING</h3><p>Convert safe sentence chunks into WAV.</p></article>
+      <span class="state-arrow" aria-hidden="true"></span>
+      <article class="state output"><h3>SPEAKING</h3><p>Browser drains its scheduled playback queue.</p></article>
+    </div>
+    <div class="interrupt">
+      <strong>Interrupt edge</strong>
+      <p>Caller speech during <code>THINKING</code>, <code>SYNTHESIZING</code> or <code>SPEAKING</code> increments <code>turn_epoch</code>, cancels provider tasks, clears scheduled audio and returns the session to <code>LISTENING</code>. Every outbound event carries its epoch; browser and server both discard stale epochs.</p>
+    </div>
+    <p class="note-box"><strong>Concurrency invariant:</strong> exactly one turn epoch may emit transcript, text or audio events. Cancellation is correctness logic—not a UI enhancement. Provider calls that cannot be cancelled may finish in the background, but their output is ignored.</p>
+  </section>
+
+  <section id="protocol" class="wrap" aria-labelledby="protocol-title">
+    <div class="sign">
+      <h2 id="protocol-title">Application and wire protocol</h2>
+      <p>Versioned JSON control events plus binary audio</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Interface</th><th>Purpose</th><th>Contract</th></tr></thead>
+        <tbody>
+          <tr><td><code>POST /api/v1/sessions</code></td><td>Create an in-memory call session.</td><td>Returns <code>session_id</code>, expiring <code>session_token</code>, <code>ws_url</code> and negotiated audio format.</td></tr>
+          <tr><td><code>WS /api/v1/sessions/{id}/stream</code></td><td>Bidirectional control and media.</td><td>Text frames are versioned JSON events. Binary frames carry PCM input or WAV output announced by the preceding JSON event.</td></tr>
+          <tr><td><code>DELETE /api/v1/sessions/{id}</code></td><td>Close a call deterministically.</td><td>Cancels tasks, releases buffers and emits the final summary before deletion when available.</td></tr>
+          <tr><td><code>GET /healthz</code></td><td>Process liveness.</td><td>No provider call; returns immediately when the event loop is alive.</td></tr>
+          <tr><td><code>GET /readyz</code></td><td>Deployment readiness.</td><td>Validates configuration and tool registry; provider reachability is reported separately, not placed on every health check.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="contract-grid">
+      <article class="contract">
+        <span class="direction">CLIENT → SERVER</span>
+        <h3>Start an input turn</h3>
+        <p>Send this event once, then raw little-endian PCM16 frames until <code>input_audio.end</code>.</p>
+        <pre class="code-block"><code>{
+  "v": 1,
+  "type": "input_audio.start",
+  "session_id": "s_01J...",
+  "turn_id": "t_0008",
+  "turn_epoch": 8,
+  "audio": {
+    "codec": "pcm_s16le",
+    "sample_rate": 16000,
+    "channels": 1,
+    "frame_ms": 20
+  }
+}</code></pre>
+      </article>
+      <article class="contract">
+        <span class="direction">SERVER → CLIENT</span>
+        <h3>Announce an audio response</h3>
+        <p>The next WebSocket binary message contains exactly <code>bytes</code> bytes for this chunk.</p>
+        <pre class="code-block"><code>{
+  "v": 1,
+  "type": "response.audio",
+  "session_id": "s_01J...",
+  "turn_id": "t_0008",
+  "turn_epoch": 8,
+  "chunk_id": "a_0002",
+  "content_type": "audio/wav",
+  "bytes": 23112,
+  "is_final": false
+}</code></pre>
+      </article>
+    </div>
+
+    <div class="table-wrap" style="margin-top: 1.1rem">
+      <table>
+        <thead><tr><th>Direction</th><th>Event</th><th>Required behavior</th></tr></thead>
+        <tbody>
+          <tr><td>Client → server</td><td><code>session.configure</code></td><td>Voice, agent scenario and consent flags. Immutable after first audio frame except mute state.</td></tr>
+          <tr><td>Client → server</td><td><code>input_audio.start</code> / binary frames / <code>input_audio.end</code></td><td>One ordered utterance. Reject overlapping turn IDs.</td></tr>
+          <tr><td>Client → server</td><td><code>response.cancel</code></td><td>Increment epoch and acknowledge with <code>response.cancelled</code>.</td></tr>
+          <tr><td>Server → client</td><td><code>transcript.final</code></td><td>Authoritative user transcript for the conversation view.</td></tr>
+          <tr><td>Server → client</td><td><code>agent.status</code></td><td>One of <code>listening</code>, <code>thinking</code>, <code>checking</code>, <code>speaking</code> or <code>recovering</code>.</td></tr>
+          <tr><td>Server → client</td><td><code>response.text.delta</code></td><td>Live caption only; sentence assembler decides when text is safe for TTS.</td></tr>
+          <tr><td>Server → client</td><td><code>response.audio</code> + binary frame</td><td>Queue only when its epoch equals the browser's active epoch.</td></tr>
+          <tr><td>Server → client</td><td><code>tool.started</code> / <code>tool.done</code></td><td>Drive “Checking your order…” UI without exposing private tool payloads.</td></tr>
+          <tr><td>Server → client</td><td><code>error</code></td><td>Stable application code, retryability and safe user-facing message; provider details remain server-side.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="media" class="wrap" aria-labelledby="media-title">
+    <div class="sign">
+      <h2 id="media-title">Media pipeline</h2>
+      <p>Capture, endpoint and playback without blocking the UI</p>
+    </div>
+    <div class="pipeline">
+      <article>
+        <h3>1. Browser capture</h3>
+        <ul>
+          <li>Request mono microphone audio with echo cancellation, noise suppression and automatic gain control.</li>
+          <li>Use an <code>AudioWorklet</code>, not the main thread, to collect float samples.</li>
+          <li>Resample the actual device rate—commonly 48 kHz—to 16 kHz mono PCM16.</li>
+          <li>Batch 20 ms frames: 320 samples or 640 bytes per WebSocket binary message.</li>
+        </ul>
+      </article>
+      <article>
+        <h3>2. Endpointing</h3>
+        <ul>
+          <li>Run lightweight VAD locally so playback can stop without a network round trip.</li>
+          <li>Keep roughly 200 ms of pre-roll to avoid clipping initial consonants.</li>
+          <li>Start after sustained speech; close after configurable silence rather than a fixed recording button.</li>
+          <li>Cap an utterance at 30 seconds and reject empty or near-silent turns.</li>
+        </ul>
+      </article>
+      <article>
+        <h3>3. Output playback</h3>
+        <ul>
+          <li>Decode returned WAV chunks and schedule them against <code>AudioContext.currentTime</code>.</li>
+          <li>Hold every active <code>AudioBufferSourceNode</code> so barge-in can call <code>stop()</code>.</li>
+          <li>Maintain a small queue, never an unbounded buffer; drop stale epochs before decode.</li>
+          <li>Pause capture-derived VAD calibration while output begins, but continue detecting real caller speech.</li>
+        </ul>
+      </article>
+    </div>
+    <dl class="config">
+      <div><dt>Input format</dt><dd>PCM16 · 16 kHz · mono</dd></div>
+      <div><dt>Frame size</dt><dd>20 ms · 640 bytes</dd></div>
+      <div><dt>Endpoint silence</dt><dd>450 ms starting default</dd></div>
+      <div><dt>Max utterance</dt><dd>30 seconds</dd></div>
+    </dl>
+    <p class="note-box"><strong>Echo safeguard:</strong> browser echo cancellation is requested, not guaranteed. Require a short run of confident speech before interrupting, test speakers and headphones separately, and expose the effective track settings in the debug panel.</p>
+  </section>
+
+  <section id="runtime" class="wrap" aria-labelledby="runtime-title">
+    <div class="sign">
+      <h2 id="runtime-title">Backend runtime</h2>
+      <p>FastAPI reference decomposition</p>
+    </div>
+    <div class="component-grid">
+      <article class="component"><span class="label">Connection boundary</span><h3>Session API</h3><p>Creates sessions, verifies short-lived tokens and upgrades the stream route to WebSocket. It never contains model logic.</p></article>
+      <article class="component"><span class="label">Per-call owner</span><h3><code>SessionActor</code></h3><p>Owns state, history, turn epoch, task group, buffers and the single serialized outbound queue.</p></article>
+      <article class="component"><span class="label">Media ingress</span><h3><code>AudioIngress</code></h3><p>Checks frame order and size, maintains pre-roll, creates an in-memory WAV and emits a closed utterance.</p></article>
+      <article class="component"><span class="label">Orchestration</span><h3><code>TurnCoordinator</code></h3><p>Runs STT → agent/tool loop → sentence chunker → TTS while enforcing cancellation and time budgets.</p></article>
+      <article class="component"><span class="label">Business boundary</span><h3><code>ToolRegistry</code></h3><p>Allow-lists functions, validates arguments and results, applies timeouts and separates reads from confirmed writes.</p></article>
+      <article class="component"><span class="label">External boundary</span><h3>Provider adapters</h3><p>Implement stable <code>transcribe()</code>, <code>stream_reply()</code> and <code>synthesize()</code> interfaces around hosted APIs.</p></article>
+      <article class="component"><span class="label">Output safety</span><h3><code>SentenceAssembler</code></h3><p>Builds speakable chunks under 200 characters without splitting amounts, identifiers or abbreviations.</p></article>
+      <article class="component"><span class="label">Telemetry</span><h3><code>EventSink</code></h3><p>Emits structured stage timings and counters keyed by session and turn, excluding raw audio by default.</p></article>
+      <article class="component"><span class="label">Demo data</span><h3><code>MockCRM</code></h3><p>Deterministic local order fixtures make tool results repeatable for tests and demonstrations.</p></article>
+    </div>
+    <p class="note-box"><strong>Backpressure:</strong> cap each session's inbound frame queue. When the queue is full, close the socket with an application-specific code instead of accumulating latency. All server writes pass through one outbound task to preserve JSON/binary ordering.</p>
+  </section>
+
+  <section id="providers" class="wrap" aria-labelledby="providers-title">
+    <div class="sign">
+      <h2 id="providers-title">Model adapter contracts</h2>
+      <p>Hosted implementations behind application-owned interfaces</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Adapter</th><th>Hosted request</th><th>Input</th><th>Output and handling</th></tr></thead>
+        <tbody>
+          <tr><td><code>SpeechRecognizer</code></td><td><code>POST /openai/v1/audio/transcriptions</code><br><code>whisper-large-v3-turbo</code></td><td>In-memory WAV, <code>language=en</code>, domain spelling prompt.</td><td>Final transcript. Apply a hard timeout; do not append to history until successful.</td></tr>
+          <tr><td><code>ConversationModel</code></td><td><code>POST /openai/v1/chat/completions</code><br>model from <code>GROQ_CHAT_MODEL</code></td><td>System policy, compact history, user transcript and local tool schemas.</td><td>Tool calls or streamed text deltas. Pin a tested model in configuration rather than hard-coding a free-tier catalog entry.</td></tr>
+          <tr><td><code>VoiceSynthesizer</code></td><td><code>POST /openai/v1/audio/speech</code><br><code>canopylabs/orpheus-v1-english</code></td><td>Approved tone direction plus a sentence chunk under 200 characters.</td><td>WAV bytes. One bounded TTS task at a time per session; prefetch at most the next sentence.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tone-map" aria-label="Allowed call-centre tone mapping">
+      <div><strong>neutral_warm</strong><span>Default enquiry</span></div>
+      <div><strong>patient</strong><span>Confusion or repetition</span></div>
+      <div><strong>calm_apologetic</strong><span>Delay or frustration</span></div>
+      <div><strong>gently_upbeat</strong><span>Successful resolution</span></div>
+      <div><strong>clear_confident</strong><span>Policy or next steps</span></div>
+    </div>
+    <p class="note-box"><strong>Tone ownership:</strong> the model may recommend a tone, but server policy maps it onto this closed enum and approved Orpheus directions. Never pass arbitrary caller text into a vocal-direction tag.</p>
+  </section>
+
+  <section id="tools" class="wrap" aria-labelledby="tools-title">
+    <div class="sign">
+      <h2 id="tools-title">Agent, tools and prompt boundary</h2>
+      <p>The model proposes; application code authorizes and executes</p>
+    </div>
+    <div class="two-col">
+      <div>
+        <h3 class="subhead">Agent loop</h3>
+        <ol class="checklist">
+          <li>Send the transcript, compact conversation history and JSON schemas for allowed tools.</li>
+          <li>If the model returns <code>tool_calls</code>, parse arguments as untrusted input and validate them against the tool schema.</li>
+          <li>Execute the local function with a per-tool timeout and an idempotency key derived from session, turn and call ID.</li>
+          <li>Append the bounded tool result using the matching <code>tool_call_id</code>, then ask the model for the caller-facing answer.</li>
+          <li>Stop after two tool iterations; return a controlled escalation message rather than looping indefinitely.</li>
+        </ol>
+      </div>
+      <div>
+        <h3 class="subhead">Voice prompt contract</h3>
+        <ul class="checklist">
+          <li>Speak in short, natural sentences; never read JSON, URLs or internal status names aloud.</li>
+          <li>Acknowledge before slow tools: “Let me check that for you.”</li>
+          <li>Never claim an action succeeded until its tool result confirms success.</li>
+          <li>Ask for one missing field at a time; repeat sensitive identifiers back only when necessary.</li>
+          <li>Remain calm and respectful; do not mirror anger, sarcasm or abusive language.</li>
+        </ul>
+      </div>
+    </div>
+    <pre class="code-block" style="margin-top: 1.25rem"><code>lookup_order({
+  order_id: string,              // pattern: ^ORD-[0-9]{6}$
+  postal_code_last4?: string     // optional demo verification
+}) -&gt; {
+  status: "processing" | "shipped" | "delayed" | "delivered",
+  estimated_delivery: string | null,
+  carrier: string | null,
+  can_escalate: boolean
+}
+
+create_support_case(...) is a write action:
+require explicit caller confirmation before execution.</code></pre>
+  </section>
+
+  <section id="sequence" class="wrap" aria-labelledby="turn-title">
     <div class="sign">
       <h2 id="turn-title">One customer turn</h2>
       <p>The event sequence behind a natural reply</p>
@@ -471,9 +859,157 @@
         <span class="owner">Browser + gateway</span>
       </li>
     </ol>
+    <pre class="sequence" aria-label="Detailed sequence diagram"><code>Browser          SessionActor       Whisper          Agent / Tool       Orpheus
+   |                  |                 |                  |                  |
+   |-- PCM frames ---&gt;|                 |                  |                  |
+   |-- input.end ----&gt;|                 |                  |                  |
+   |                  |-- WAV upload --&gt;|                  |                  |
+   |                  |&lt;-- transcript --|                  |                  |
+   |&lt; transcript.final|                 |                  |                  |
+   |                  |---------------- chat + tools -----&gt;|                  |
+   |&lt; agent.status: checking ------------------------------|                  |
+   |                  |&lt;------------- tool result / text --|                  |
+   |&lt; text.delta -----|                 |                  |                  |
+   |                  |-------------------------------- sentence + tone -----&gt;|
+   |                  |&lt;---------------------------------------- WAV chunk ---|
+   |&lt; audio metadata -|                 |                  |                  |
+   |&lt; WAV binary -----|                 |                  |                  |
+   |-- new speech ----&gt;|  increment epoch; cancel tasks; ignore stale output |
+   |&lt; cancelled -------|                 |                  |                  |</code></pre>
   </section>
 
-  <section class="wrap" aria-labelledby="boundary-title">
+  <section id="reliability" class="wrap" aria-labelledby="reliability-title">
+    <div class="sign">
+      <h2 id="reliability-title">Failure handling and observability</h2>
+      <p>Degrade visibly, recover safely, measure every stage</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Failure</th><th>Application response</th><th>Caller experience</th></tr></thead>
+        <tbody>
+          <tr><td>Microphone denied or unavailable</td><td>Do not create a session; show browser-specific remediation.</td><td>No fake connected state.</td></tr>
+          <tr><td>WebSocket interrupted</td><td>Stop capture/playback, cancel the server session and offer a fresh call. Do not replay buffered speech after reconnect.</td><td>“Connection lost—reconnect to continue.”</td></tr>
+          <tr><td>STT timeout or empty transcript</td><td>Retry once only for transient provider failure; otherwise keep history unchanged.</td><td>“I didn’t catch that. Could you say it again?”</td></tr>
+          <tr><td>Invalid tool call</td><td>Reject arguments, record a validation event and allow one model repair attempt.</td><td>No internal error details; ask a clarifying question if repair fails.</td></tr>
+          <tr><td>Tool timeout</td><td>Return a typed timeout result to the agent; never invent business data.</td><td>Explain that the system cannot be checked and offer escalation.</td></tr>
+          <tr><td>TTS failure</td><td>Cancel remaining synthesis and retain the generated text response.</td><td>Show the response as text with a “voice unavailable” status.</td></tr>
+          <tr><td>Provider rate limit</td><td>Respect <code>Retry-After</code>; trip a short circuit breaker after repeated 429s.</td><td>End or pause the demo clearly—never spin silently.</td></tr>
+          <tr><td>Late output after barge-in</td><td>Discard on epoch mismatch at both server enqueue and browser receive.</td><td>No stale sentence plays over the next turn.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="subhead" style="margin-top: 1.75rem">PoC service-level targets</h3>
+    <div class="metric-grid">
+      <article class="metric"><strong>&lt; 150 ms p95</strong><h3>Barge-in to silence</h3><p><code>interrupt_to_silence_ms</code>, measured entirely in the browser.</p></article>
+      <article class="metric"><strong>&lt; 2.5 s p95</strong><h3>Speech end to first audio</h3><p><code>speech_end_to_first_audio_ms</code>; target, not a provider guarantee.</p></article>
+      <article class="metric"><strong>0 / 100</strong><h3>Stale chunks</h3><p>Forced-interruption test must play no audio from an earlier epoch.</p></article>
+      <article class="metric"><strong>≥ 90%</strong><h3>Scenario completion</h3><p>Fixed order-support evaluation reaches the expected tool outcome.</p></article>
+    </div>
+
+    <div class="two-col" style="margin-top: 1.5rem">
+      <div>
+        <h3 class="subhead">Structured event fields</h3>
+        <ul class="checklist">
+          <li><code>timestamp</code>, <code>session_id</code>, <code>turn_id</code>, <code>turn_epoch</code></li>
+          <li><code>stage</code>, <code>event</code>, <code>duration_ms</code>, <code>outcome</code></li>
+          <li><code>provider</code>, <code>model</code>, <code>request_id</code>, <code>retry_count</code></li>
+          <li>Never log API keys, binary audio or full tool payloads.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="subhead">Stage metrics</h3>
+        <ul class="checklist">
+          <li><code>stt_latency_ms</code> and empty-transcript rate</li>
+          <li><code>llm_ttft_ms</code>, total tokens and tool iterations</li>
+          <li><code>tool_latency_ms</code> by tool and outcome</li>
+          <li><code>tts_latency_ms</code>, audio duration and cancelled chunks</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="delivery" class="wrap" aria-labelledby="delivery-title">
+    <div class="sign">
+      <h2 id="delivery-title">Reference code shape and verification</h2>
+      <p>Keep transport, orchestration and provider code independently testable</p>
+    </div>
+    <div class="two-col">
+      <div>
+        <h3 class="subhead">Suggested repository layout</h3>
+        <pre class="repo-tree"><code>poc/
+├── web/
+│   ├── index.html
+│   ├── call.js
+│   ├── audio-worklet.js
+│   ├── playback-queue.js
+│   └── protocol.js
+├── server/
+│   ├── app.py
+│   ├── settings.py
+│   ├── protocol.py
+│   ├── sessions.py
+│   ├── audio.py
+│   ├── turns.py
+│   ├── sentence_assembler.py
+│   ├── agent/
+│   │   ├── prompt.py
+│   │   ├── runtime.py
+│   │   └── tools.py
+│   └── providers/
+│       ├── base.py
+│       └── groq.py
+├── fixtures/
+│   └── orders.json
+└── tests/
+    ├── unit/
+    ├── integration/
+    └── scenarios/</code></pre>
+      </div>
+      <div>
+        <h3 class="subhead">Configuration contract</h3>
+        <pre class="code-block"><code>GROQ_API_KEY=server_only
+GROQ_STT_MODEL=whisper-large-v3-turbo
+GROQ_CHAT_MODEL=&lt;pinned-tested-model&gt;
+GROQ_TTS_MODEL=canopylabs/orpheus-v1-english
+GROQ_TTS_VOICE=autumn
+
+VOICE_SAMPLE_RATE=16000
+VOICE_ENDPOINT_SILENCE_MS=450
+VOICE_MAX_UTTERANCE_SECONDS=30
+VOICE_TOOL_TIMEOUT_MS=2500
+VOICE_PROVIDER_TIMEOUT_MS=10000
+VOICE_STORE_TRANSCRIPTS=false</code></pre>
+        <p class="note-box"><strong>Local browser rule:</strong> microphone capture works on secure contexts and on <code>localhost</code>. Serve the browser and API from one origin during development to avoid unnecessary CORS and credential complexity.</p>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-top: 1.5rem">
+      <div>
+        <h3 class="subhead">Automated verification</h3>
+        <ul class="checklist">
+          <li>Unit-test resampling, WAV encoding, sentence boundaries, tone mapping and epoch rejection.</li>
+          <li>Use fake provider adapters to deterministically test tool calls, timeouts and cancellation races.</li>
+          <li>Replay fixed WAV fixtures for silence, clipped speech, order numbers and background noise.</li>
+          <li>Run 100 forced barge-ins at different response stages and assert zero stale playback.</li>
+          <li>Keep golden scenario assertions on tool result and final application state—not exact model wording.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="subhead">Implementation order</h3>
+        <ol class="checklist">
+          <li>Push-to-talk vertical slice with transcript, reply and WAV playback.</li>
+          <li>AudioWorklet capture, VAD endpointing and WebSocket protocol.</li>
+          <li>Session actor, epoch cancellation and playback queue.</li>
+          <li>Mock CRM tool loop and explicit write confirmation.</li>
+          <li>Tone controller, sentence-level TTS and live status UI.</li>
+          <li>Failure injection, telemetry and scenario evaluation.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section id="boundary" class="wrap" aria-labelledby="boundary-title">
     <div class="sign">
       <h2 id="boundary-title">Deployment boundary</h2>
       <p>What stays local and what leaves the application</p>
@@ -489,6 +1025,18 @@
       </article>
     </div>
     <p class="caution"><strong>PoC boundary:</strong> free-tier APIs are appropriate for demonstration, not a production contact centre. They provide no commitment to availability, capacity or UAE/KSA data residency. Production deployment needs contracted services, retention controls and measured regional performance.</p>
+
+    <h3 class="subhead" style="margin-top: 2rem">Implementation references</h3>
+    <ul class="references">
+      <li><a href="https://console.groq.com/docs/speech-to-text">Groq speech-to-text</a><small>Transcription endpoint, formats and Whisper models</small></li>
+      <li><a href="https://console.groq.com/docs/text-chat">Groq text generation</a><small>Chat completions and streamed response deltas</small></li>
+      <li><a href="https://console.groq.com/docs/tool-use/local-tool-calling">Groq local tool calling</a><small>Tool-call request, execution and result loop</small></li>
+      <li><a href="https://console.groq.com/docs/text-to-speech/orpheus">Groq Orpheus TTS</a><small>Vocal directions, voices and 200-character input limit</small></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Using_AudioWorklet">MDN AudioWorklet guide</a><small>Off-main-thread browser audio processing</small></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/binaryType">MDN WebSocket binary data</a><small>ArrayBuffer transport for audio frames</small></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints">MDN media constraints</a><small>Echo cancellation, noise suppression and capture settings</small></li>
+      <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/AudioBufferSourceNode">MDN AudioBufferSourceNode</a><small>Scheduled playback and interruption control</small></li>
+    </ul>
   </section>
 </main>
 
