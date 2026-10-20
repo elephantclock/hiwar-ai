@@ -28,7 +28,9 @@ Requirements: Python 3.11+ and a Chromium-, Firefox- or Safari-based browser.
 ```bash
 cd poc
 python3 -m venv .venv
+python -m pip install --upgrade pip setuptools wheel
 source .venv/bin/activate
+python -m ensurepip --upgrade
 python -m pip install -e ".[dev]"
 cp .env.example .env
 uvicorn server.app:app --reload --port 8000

@@ -1,0 +1,8 @@
+[project]
+name = "hiwar"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "ollama>=0.6.3",
+    "pipecat-ai[kokoro,local,mlx-whisper,ollama,silero,whisper]>=1.13.0",
+]
