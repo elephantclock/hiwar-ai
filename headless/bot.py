@@ -109,6 +109,11 @@ BACKCHANNEL_MIN_TURN_SECS = 4.0
 BACKCHANNEL_COOLDOWN_SECS = 12.0
 BACKCHANNEL_PROBABILITY = 0.6
 BACKCHANNEL_PHRASES = ["Mm-hmm.", "Mhm.", "Uh-huh.", "Mm.", "Right.", "Mmm.", "I see."]
+# Speed multipliers (on the current base pace) for short acknowledgments the bot speaks, such as
+# "Mm-hmm" or "Right", and for laughter syllables such as "Ha ha" and "Heh". Both are spoken quickly,
+# the way people actually say them.
+BACKCHANNEL_SPEED = 1.25
+LAUGHTER_SPEED = 1.45
 
 # Spoken (and kept out of the conversation history) when the bot hands a task to the backend model.
 HOLD_LINES = [
@@ -124,13 +129,34 @@ _BACKCHANNEL_VOCAB = {
     "mm", "mmm", "hmm", "hm", "mhm", "mmhmm", "uh", "huh", "um", "yeah", "yes", "yep", "yup",
     "right", "ok", "okay", "sure", "oh", "ah", "aha", "ha", "haha", "hah", "heh", "wow", "cool",
     "nice", "true", "exactly", "indeed", "i", "see", "got", "it", "interesting", "really", "gotcha",
+    "hehe", "lol",
 }  # fmt: skip
+_LAUGHTER_VOCAB = {"ha", "haha", "hah", "heh", "hehe", "lol"}
+
+
+def _words(text: str) -> list[str]:
+    return re.sub(r"[^a-z ]", "", text.lower().replace("-", " ")).split()
 
 
 def is_backchannel(text: str) -> bool:
     """True for a short listening noise like "mm-hmm", "yeah", "uh huh", "I see", "haha"."""
-    words = re.sub(r"[^a-z ]", "", text.lower().replace("-", " ")).split()
+    words = _words(text)
     return 0 < len(words) <= 4 and all(w in _BACKCHANNEL_VOCAB for w in words)
+
+
+def is_laughter(text: str) -> bool:
+    """True for laughter syllables only, like "Ha ha ha!", "Heh.", "Hehe"."""
+    words = _words(text)
+    return 0 < len(words) <= 8 and all(w in _LAUGHTER_VOCAB for w in words)
+
+
+def quick_speed(text: str, base: float) -> float | None:
+    """Fixed fast pace for laughter and short acknowledgments; None for ordinary sentences."""
+    if is_laughter(text):
+        return min(1.6, base * LAUGHTER_SPEED)
+    if is_backchannel(text):
+        return min(1.5, base * BACKCHANNEL_SPEED)
+    return None
 
 
 class PatientInterruptionStrategy(BaseUserTurnStartStrategy):
@@ -557,6 +583,7 @@ class ExpressiveKokoroTTSService(KokoroTTSService):
             if gap and gap[0] == context_id:
                 yield self._silence(gap[1], context_id)
 
+            quick_ok = True
             if tag:
                 clips = self._clips_for(tag.group(1))
                 if clips:
@@ -569,19 +596,23 @@ class ExpressiveKokoroTTSService(KokoroTTSService):
                     self._pending_gap = (context_id, 0.15)
                     continue
                 part = SOUND_FALLBACK_TEXT[tag.group(1)]
-            async for frame in self._speak(part, context_id, pace):
+                quick_ok = tag.group(1) in ("laugh", "chuckle")  # a sigh or hum stays unhurried
+            async for frame in self._speak(part, context_id, pace, quick_ok):
                 yield frame
             self._pending_gap = (context_id, self._pause_after(part))
 
     async def _speak(
-        self, text: str, context_id: str, pace: float = 1.0
+        self, text: str, context_id: str, pace: float = 1.0, quick_ok: bool = True
     ) -> AsyncGenerator[Frame, None]:
         try:
             await self.start_tts_usage_metrics(text)
             voice = require_given(self._settings.voice, "Kokoro TTS voice")
             lang = require_given(self._settings.language, "Kokoro TTS language")
             base = assert_given(self._settings.speed) * self.style["speed"] * self.pace.factor
-            speed = sentence_speed(text, base, pace, self.style.get("variation", 1.0))
+            # Laughter and short acknowledgments are spoken quickly, unless the model explicitly
+            # tagged the pace.
+            quick = quick_speed(text, base) if (quick_ok and pace == 1.0) else None
+            speed = quick or sentence_speed(text, base, pace, self.style.get("variation", 1.0))
             logger.info(
                 f"Speaking at {speed:.2f}x (base {base:.2f}, pace tag {pace:.2f}): "
                 f"{text.strip()[:60]!r}"
