@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#101615">
+  <title>Hiwar Headless Voice Companion — Technical Architecture</title>
+  <meta name="description" content="Code-aligned technical and model architecture for the local Hiwar headless voice companion built with Pipecat, MLX Whisper, Ollama, Kokoro or Orpheus, Silero VAD, and Smart Turn.">
+  <link rel="canonical" href="https://elephantclock.github.io/hiwar-ai/headless-architecture.html">
+  <style>
+    :root {
+      --bg: #f1efe9;
+      --surface: #faf8f2;
+      --surface-2: #e9e6de;
+      --ink: #111816;
+      --muted: #59625f;
+      --line: #c9cdc6;
+      --green: #087f5b;
+      --green-soft: #d8eee5;
+      --orange: #d45d27;
+      --orange-soft: #f5dfd3;
+      --blue: #2264d1;
+      --blue-soft: #dce7f8;
+      --violet: #7055b8;
+      --violet-soft: #e8e0f4;
+      --red: #a93b45;
+      --red-soft: #f3dcde;
+      --yellow: #b57a0e;
+      --yellow-soft: #f2e6c9;
+      --terminal: #101615;
+      --terminal-ink: #dff8ed;
+      --shadow: 0 20px 60px rgba(18, 26, 23, .08);
+      --radius: 18px;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101412;
+        --surface: #171d1a;
+        --surface-2: #202824;
+        --ink: #edf3ef;
+        --muted: #a7b1ac;
+        --line: #36413c;
+        --green: #52d6aa;
+        --green-soft: #163b30;
+        --orange: #ff9567;
+        --orange-soft: #48291d;
+        --blue: #86aff5;
+        --blue-soft: #213754;
+        --violet: #b8a2ef;
+        --violet-soft: #362c4f;
+        --red: #f28d96;
+        --red-soft: #48272b;
+        --yellow: #edbd61;
+        --yellow-soft: #45391e;
+        --shadow: 0 20px 60px rgba(0, 0, 0, .22);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 90% 2%, color-mix(in srgb, var(--orange) 12%, transparent), transparent 30rem),
+        var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      line-height: 1.55;
+    }
+    a { color: inherit; text-underline-offset: .2em; }
+    button { font: inherit; }
+    code, .mono { font-family: var(--mono); }
+    code { font-size: .88em; }
+    :focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+    .wrap { width: min(1180px, calc(100% - 2rem)); margin-inline: auto; }
+    .skip {
+      position: fixed; top: -5rem; left: 1rem; z-index: 99;
+      padding: .7rem 1rem; color: white; background: #000; border-radius: 0 0 8px 8px;
+    }
+    .skip:focus { top: 0; }
+
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 75%, transparent);
+      backdrop-filter: blur(18px);
+    }
+    .topbar {
+      min-height: 66px; display: flex; align-items: center; justify-content: space-between;
+      gap: 1.5rem;
+    }
+    .brand { display: flex; align-items: center; gap: .8rem; text-decoration: none; }
+    .brand-mark {
+      display: grid; place-items: center; width: 34px; height: 34px;
+      border: 1px solid var(--ink); border-radius: 50%; font-weight: 800;
+    }
+    .brand-copy { display: flex; align-items: baseline; gap: .55rem; }
+    .brand-copy strong { letter-spacing: -.02em; }
+    .brand-copy span { color: var(--muted); font-size: .78rem; font-family: var(--mono); }
+    nav { display: flex; gap: 1.2rem; font-size: .84rem; }
+    nav a { color: var(--muted); text-decoration: none; }
+    nav a:hover { color: var(--ink); }
+
+    .hero { padding: clamp(4rem, 9vw, 8rem) 0 4.2rem; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: .55rem;
+      margin-bottom: 1.3rem; color: var(--green); font: 700 .76rem/1 var(--mono);
+      text-transform: uppercase; letter-spacing: .1em;
+    }
+    .pulse { width: .65rem; height: .65rem; background: var(--green); border-radius: 50%; box-shadow: 0 0 0 6px color-mix(in srgb, var(--green) 13%, transparent); }
+    h1 {
+      max-width: 850px; margin: 0; font-size: clamp(2.7rem, 7vw, 6.25rem);
+      font-weight: 720; line-height: .96; letter-spacing: -.065em;
+    }
+    .hero-grid { display: grid; grid-template-columns: 1.35fr .65fr; gap: 4rem; margin-top: 2.25rem; align-items: end; }
+    .lede { margin: 0; max-width: 710px; color: var(--muted); font-size: clamp(1.06rem, 2vw, 1.3rem); }
+    .stamp { justify-self: end; border-left: 2px solid var(--orange); padding-left: 1rem; }
+    .stamp strong, .stamp span { display: block; }
+    .stamp strong { font: 700 .8rem/1.4 var(--mono); }
+    .stamp span { color: var(--muted); font-size: .84rem; }
+
+    .facts {
+      display: grid; grid-template-columns: repeat(4, 1fr); border-block: 1px solid var(--line);
+      margin-top: 3.5rem;
+    }
+    .fact { padding: 1.15rem 1rem; border-right: 1px solid var(--line); }
+    .fact:first-child { padding-left: 0; }
+    .fact:last-child { border-right: 0; }
+    .fact span { display: block; color: var(--muted); font-size: .74rem; text-transform: uppercase; letter-spacing: .08em; }
+    .fact strong { display: block; margin-top: .2rem; font: 700 .92rem/1.35 var(--mono); }
+
+    section { padding: clamp(4.5rem, 9vw, 8rem) 0; }
+    .section-head {
+      display: grid; grid-template-columns: 100px minmax(0, 1fr) minmax(250px, .7fr);
+      gap: 1rem 2rem; align-items: start; margin-bottom: 2.5rem;
+    }
+    .kicker { color: var(--orange); font: 700 .76rem/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    h2 { margin: 0; font-size: clamp(2rem, 4.3vw, 3.65rem); line-height: 1; letter-spacing: -.045em; }
+    .section-head p { margin: .25rem 0 0; color: var(--muted); }
+
+    .arch-shell {
+      padding: clamp(1rem, 2.5vw, 2rem); background: var(--surface);
+      border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow);
+    }
+    .boundary {
+      display: grid; grid-template-columns: 1fr 4.4fr 1fr; gap: .75rem;
+      margin-bottom: .75rem;
+    }
+    .boundary span {
+      padding: .35rem .65rem; color: var(--muted); border-bottom: 1px dashed var(--line);
+      font: 700 .67rem/1.3 var(--mono); text-transform: uppercase; letter-spacing: .08em;
+    }
+    .pipeline {
+      display: grid;
+      grid-template-columns: minmax(105px, .8fr) 26px minmax(110px, 1fr) 26px minmax(125px, 1.25fr) 26px minmax(125px, 1.15fr) 26px minmax(110px, 1fr) 26px minmax(105px, .8fr);
+      align-items: stretch;
+    }
+    .box {
+      position: relative; min-width: 0; padding: .95rem; background: var(--bg);
+      border: 1px solid var(--line); border-top: 4px solid var(--c); border-radius: 11px;
+    }
+    .box.device { --c: var(--blue); }
+    .box.model { --c: var(--orange); }
+    .box.control { --c: var(--green); }
+    .box.runtime { --c: var(--violet); }
+    .box h3 { margin: .35rem 0 .4rem; font-size: .93rem; line-height: 1.15; }
+    .box p { margin: 0; color: var(--muted); font-size: .72rem; line-height: 1.45; }
+    .box .type { color: var(--c); font: 700 .62rem/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+    .connector { display: grid; place-items: center; color: var(--muted); }
+    .connector::before { content: "→"; font-size: 1.1rem; }
+    .stage-number {
+      position: absolute; top: -.7rem; right: .5rem; display: grid; place-items: center;
+      width: 1.4rem; height: 1.4rem; color: var(--surface); background: var(--c);
+      border-radius: 50%; font: 700 .62rem/1 var(--mono);
+    }
+    .subrail {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem;
+      margin: 1rem 0 0 calc((100% - 130px) * .29); width: calc((100% - 130px) * .46);
+    }
+    .micro {
+      padding: .65rem .7rem; border: 1px dashed var(--line); border-radius: 8px;
+      background: var(--surface-2); text-align: center;
+    }
+    .micro strong { display: block; font: 700 .67rem/1.3 var(--mono); }
+    .micro span { display: block; margin-top: .2rem; color: var(--muted); font-size: .65rem; }
+    .loopback {
+      margin: 1.3rem 8% 0; padding-top: .8rem; border-top: 1px dashed var(--violet);
+      color: var(--violet); text-align: center; font: 700 .68rem/1.4 var(--mono);
+    }
+    .delegate {
+      width: min(520px, 100%); margin: 1.2rem auto 0; padding: 1rem;
+      display: grid; grid-template-columns: 1fr 2rem 1.1fr; align-items: center;
+      background: var(--yellow-soft); border: 1px solid color-mix(in srgb, var(--yellow) 45%, var(--line)); border-radius: 11px;
+    }
+    .delegate strong { font-size: .84rem; }
+    .delegate small { display: block; color: var(--muted); font-size: .72rem; }
+    .delegate .arr { text-align: center; color: var(--yellow); }
+    .legend { display: flex; flex-wrap: wrap; gap: .75rem 1.3rem; margin: 1.4rem 0 0; padding: 0; list-style: none; color: var(--muted); font-size: .72rem; }
+    .legend i { display: inline-block; width: .65rem; height: .65rem; margin-right: .35rem; border-radius: 2px; background: var(--c); }
+
+    .dark-section { color: #f3f8f5; background: var(--terminal); }
+    .dark-section .section-head p { color: #aab8b1; }
+    .dark-section .kicker { color: #ff9d73; }
+    .tablist { display: flex; gap: .35rem; overflow-x: auto; padding-bottom: .25rem; }
+    .tablist button {
+      flex: 0 0 auto; padding: .65rem 1rem; color: #aab8b1; background: transparent;
+      border: 1px solid #38443e; border-radius: 99px; cursor: pointer;
+    }
+    .tablist button[aria-selected="true"] { color: #101615; background: #dff8ed; border-color: #dff8ed; }
+    .scenario { display: grid; grid-template-columns: .72fr 1.28fr; gap: 2rem; margin-top: 1.4rem; }
+    .scenario-copy { padding: 1.5rem 0; }
+    .scenario-copy .state { color: #69dfb5; font: 700 .72rem/1 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+    .scenario-copy h3 { margin: .7rem 0; font-size: 1.65rem; }
+    .scenario-copy p { margin: 0; color: #aab8b1; }
+    .sequence { margin: 0; padding: 0; list-style: none; counter-reset: seq; }
+    .sequence li {
+      counter-increment: seq; position: relative; display: grid; grid-template-columns: 2rem 1fr auto;
+      gap: .75rem; padding: 1rem 0; border-top: 1px solid #35413b; align-items: start;
+    }
+    .sequence li::before { content: counter(seq, decimal-leading-zero); color: #69dfb5; font: 700 .69rem/1.5 var(--mono); }
+    .sequence strong { font-size: .88rem; }
+    .sequence small { color: #8e9c95; text-align: right; font: .65rem/1.4 var(--mono); }
+    .sequence code { color: #ffd0bb; }
+    [hidden] { display: none !important; }
+
+    .model-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+    .model-card {
+      position: relative; overflow: hidden; min-height: 235px; padding: 1.4rem;
+      background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    }
+    .model-card::after {
+      content: attr(data-index); position: absolute; right: -.2rem; bottom: -2.6rem;
+      color: color-mix(in srgb, var(--c) 10%, transparent); font-size: 9rem; font-weight: 800; line-height: 1;
+    }
+    .model-card:nth-child(1) { --c: var(--orange); }
+    .model-card:nth-child(2) { --c: var(--green); }
+    .model-card:nth-child(3) { --c: var(--blue); }
+    .model-card:nth-child(4) { --c: var(--violet); }
+    .model-card .role { color: var(--c); font: 700 .68rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    .model-card h3 { position: relative; z-index: 1; margin: .7rem 0 .2rem; font-size: 1.3rem; }
+    .model-card .id { position: relative; z-index: 1; color: var(--muted); font: .72rem/1.5 var(--mono); overflow-wrap: anywhere; }
+    .model-card dl { position: relative; z-index: 1; display: grid; grid-template-columns: 6rem 1fr; margin: 1.2rem 0 0; font-size: .78rem; }
+    .model-card dt, .model-card dd { margin: 0; padding: .4rem 0; border-top: 1px solid var(--line); }
+    .model-card dt { color: var(--muted); }
+    .model-card dd { font-weight: 600; }
+    .choice-note { margin-top: 1rem; padding: 1rem 1.2rem; border-left: 4px solid var(--orange); background: var(--orange-soft); color: var(--muted); }
+    .choice-note strong { color: var(--ink); }
+
+    .layers { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 1.2rem; }
+    .layers aside { align-self: start; position: sticky; top: 90px; }
+    .layers aside p { color: var(--muted); font-size: .86rem; }
+    .layers aside a { display: block; padding: .4rem 0; color: var(--muted); font: .72rem/1.4 var(--mono); text-decoration: none; }
+    .layers aside a:hover { color: var(--ink); }
+    .layer-stack { display: grid; gap: .75rem; }
+    .layer {
+      display: grid; grid-template-columns: 150px 1fr 180px; gap: 1rem; align-items: center;
+      padding: 1rem 1.2rem; background: var(--surface); border: 1px solid var(--line); border-left: 5px solid var(--c); border-radius: 11px;
+    }
+    .layer:nth-child(1) { --c: var(--blue); }
+    .layer:nth-child(2) { --c: var(--orange); }
+    .layer:nth-child(3) { --c: var(--green); }
+    .layer:nth-child(4) { --c: var(--violet); }
+    .layer:nth-child(5) { --c: var(--yellow); }
+    .layer:nth-child(6) { --c: var(--red); }
+    .layer h3 { margin: 0; font-size: .93rem; }
+    .layer p { margin: 0; color: var(--muted); font-size: .79rem; }
+    .layer code { color: var(--c); overflow-wrap: anywhere; }
+    .layer .owner { color: var(--muted); text-align: right; font: .68rem/1.45 var(--mono); }
+
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .panel { padding: 1.4rem; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+    .panel h3 { margin: 0 0 1rem; font-size: 1.15rem; }
+    .spec-list { margin: 0; padding: 0; list-style: none; }
+    .spec-list li {
+      display: grid; grid-template-columns: minmax(110px, .6fr) 1.4fr; gap: 1rem;
+      padding: .75rem 0; border-top: 1px solid var(--line); font-size: .8rem;
+    }
+    .spec-list span { color: var(--muted); }
+    .spec-list strong { font-family: var(--mono); font-weight: 600; overflow-wrap: anywhere; }
+    .terminal {
+      margin-top: 1rem; background: var(--terminal); border: 1px solid #33403a;
+      color: var(--terminal-ink); border-radius: 13px; overflow: hidden;
+    }
+    .terminal-bar { display: flex; align-items: center; gap: .4rem; padding: .65rem .8rem; border-bottom: 1px solid #33403a; }
+    .terminal-bar i { width: .65rem; height: .65rem; border-radius: 50%; background: #58645e; }
+    .terminal-bar i:first-child { background: #f07a66; }
+    .terminal-bar i:nth-child(2) { background: #edbc5f; }
+    .terminal-bar i:nth-child(3) { background: #60c995; }
+    pre { margin: 0; padding: 1.1rem; overflow-x: auto; font: .77rem/1.7 var(--mono); }
+    .cmd { color: #77d9b3; }
+    .comment { color: #84928b; }
+
+    .risk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .risk { padding-top: 1rem; border-top: 3px solid var(--c); }
+    .risk:nth-child(1), .risk:nth-child(4) { --c: var(--red); }
+    .risk:nth-child(2), .risk:nth-child(5) { --c: var(--yellow); }
+    .risk:nth-child(3), .risk:nth-child(6) { --c: var(--blue); }
+    .risk .level { color: var(--c); font: 700 .68rem/1 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+    .risk h3 { margin: .55rem 0 .35rem; font-size: 1rem; }
+    .risk p { margin: 0; color: var(--muted); font-size: .82rem; }
+
+    footer { padding: 2.5rem 0 3.5rem; border-top: 1px solid var(--line); }
+    .foot { display: flex; justify-content: space-between; gap: 2rem; color: var(--muted); font-size: .78rem; }
+    .foot strong { color: var(--ink); }
+
+    @media (max-width: 1000px) {
+      .boundary { display: none; }
+      .pipeline { grid-template-columns: 1fr; }
+      .connector { min-height: 28px; }
+      .connector::before { content: "↓"; }
+      .subrail { width: 100%; margin-left: 0; }
+      .layer { grid-template-columns: 125px 1fr; }
+      .layer .owner { grid-column: 2; text-align: left; }
+    }
+    @media (max-width: 780px) {
+      nav { display: none; }
+      .hero-grid, .scenario, .split { grid-template-columns: 1fr; gap: 1.5rem; }
+      .stamp { justify-self: start; }
+      .facts { grid-template-columns: repeat(2, 1fr); }
+      .fact:nth-child(2) { border-right: 0; }
+      .fact:nth-child(3) { padding-left: 0; border-top: 1px solid var(--line); }
+      .fact:nth-child(4) { border-top: 1px solid var(--line); }
+      .section-head { grid-template-columns: 1fr; }
+      .model-grid, .risk-grid { grid-template-columns: 1fr; }
+      .layers { grid-template-columns: 1fr; }
+      .layers aside { position: static; }
+      .layers aside nav { display: grid; grid-template-columns: repeat(2, 1fr); }
+      .subrail { grid-template-columns: 1fr; }
+      .delegate { grid-template-columns: 1fr; gap: .6rem; text-align: center; }
+      .delegate .arr { transform: rotate(90deg); }
+      .layer { grid-template-columns: 1fr; }
+      .layer .owner { grid-column: 1; }
+    }
+    @media (max-width: 480px) {
+      .wrap { width: min(100% - 1.2rem, 1180px); }
+      .brand-copy span { display: none; }
+      .facts { grid-template-columns: 1fr; }
+      .fact, .fact:first-child, .fact:nth-child(3) { padding: .9rem 0; border-right: 0; border-top: 1px solid var(--line); }
+      .fact:first-child { border-top: 0; }
+      .sequence li { grid-template-columns: 1.7rem 1fr; }
+      .sequence small { grid-column: 2; text-align: left; }
+      .model-grid { grid-template-columns: 1fr; }
+      .spec-list li { grid-template-columns: 1fr; gap: .15rem; }
+      .foot { display: block; }
+    }
+    @media print {
+      header, .tablist { display: none; }
+      body { background: white; }
+      section { padding: 2rem 0; break-inside: avoid; }
+      .arch-shell, .model-card, .panel { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to architecture</a>
+  <header>
+    <div class="wrap topbar">
+      <a class="brand" href="#top" aria-label="Hiwar Headless architecture home">
+        <span class="brand-mark">H</span>
+        <span class="brand-copy"><strong>Hiwar Headless</strong><span>architecture.html</span></span>
+      </a>
+      <nav aria-label="Architecture sections">
+        <a href="#runtime">Runtime</a>
+        <a href="#turns">Turn logic</a>
+        <a href="#models">Models</a>
+        <a href="#implementation">Implementation</a>
+        <a href="#run">Runbook</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="content">
+    <section class="hero" id="top">
+      <div class="wrap">
+        <div class="eyebrow"><span class="pulse" aria-hidden="true"></span> Code-aligned system map · October 2026</div>
+        <h1>A voice loop that feels less like a loop.</h1>
+        <div class="hero-grid">
+          <p class="lede">An engineer-facing view of the current local English companion: microphone audio becomes text, conversation, and expressive speech on one Apple Silicon machine—while turn control, backchannels, fillers, and a second reasoning model hide the mechanical edges.</p>
+          <div class="stamp">
+            <strong>ACTIVE PATH</strong>
+            <span><code>main.py → natural.py</code></span>
+            <span><code>bot.py</code> is an alternate prototype</span>
+          </div>
+        </div>
+        <div class="facts" aria-label="Runtime facts">
+          <div class="fact"><span>Execution</span><strong>100% local by default</strong></div>
+          <div class="fact"><span>Orchestrator</span><strong>Pipecat 1.13</strong></div>
+          <div class="fact"><span>Primary language</span><strong>English</strong></div>
+          <div class="fact"><span>Target hardware</span><strong>Apple Silicon · 32 GB</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="runtime">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="kicker">01 / Runtime</div>
+          <h2>The live media path</h2>
+          <p>Frames move left to right through one asynchronous Pipecat pipeline. Conversation state closes the loop after assistant output.</p>
+        </div>
+
+        <div class="arch-shell">
+          <div class="boundary" aria-hidden="true">
+            <span>Human I/O</span><span>Python process · Pipecat pipeline</span><span>Human I/O</span>
+          </div>
+          <div class="pipeline" aria-label="Main voice pipeline">
+            <article class="box device">
+              <span class="stage-number">1</span><span class="type">Audio device</span>
+              <h3>Microphone</h3><p>PyAudio input selected by device index.</p>
+            </article>
+            <div class="connector" aria-hidden="true"></div>
+            <article class="box model">
+              <span class="stage-number">2</span><span class="type">Speech model</span>
+              <h3>MLX Whisper</h3><p>English transcription on Apple GPU.</p>
+            </article>
+            <div class="connector" aria-hidden="true"></div>
+            <article class="box control">
+              <span class="stage-number">3</span><span class="type">Turn control</span>
+              <h3>Human signals</h3><p>Filter acknowledgments, track speech, decide turn end.</p>
+            </article>
+            <div class="connector" aria-hidden="true"></div>
+            <article class="box runtime">
+              <span class="stage-number">4</span><span class="type">Conversation</span>
+              <h3>Ollama chat LLM</h3><p>Prompt, history, streamed answer, tool calls.</p>
+            </article>
+            <div class="connector" aria-hidden="true"></div>
+            <article class="box model">
+              <span class="stage-number">5</span><span class="type">Voice model</span>
+              <h3>Kokoro / Orpheus</h3><p>Text stream to synthesized speech.</p>
+            </article>
+            <div class="connector" aria-hidden="true"></div>
+            <article class="box device">
+              <span class="stage-number">6</span><span class="type">Audio device</span>
+              <h3>Speakers</h3><p>PyAudio output; headphones recommended.</p>
+            </article>
+          </div>
+
+          <div class="subrail" aria-label="Turn controller internals">
+            <div class="micro"><strong>Silero VAD</strong><span>speech probability · 0.70</span></div>
+            <div class="micro"><strong>MinWords</strong><span>interrupt after ≥ 2 words</span></div>
+            <div class="micro"><strong>Smart Turn v3</strong><span>semantic end-of-turn · ONNX</span></div>
+          </div>
+
+          <div class="loopback">assistant text → <code>LLMContextAggregatorPair.assistant()</code> → conversation history for the next turn</div>
+
+          <div class="delegate" aria-label="Backend delegation path">
+            <div><strong><code>ask_backend(task)</code></strong><small>Function tool chosen by conversational LLM</small></div>
+            <div class="arr" aria-hidden="true">→</div>
+            <div><strong>Backend Ollama model</strong><small>Precise reasoning response returns as tool result</small></div>
+          </div>
+
+          <ul class="legend" aria-label="Diagram legend">
+            <li><i style="--c:var(--blue)"></i>device boundary</li>
+            <li><i style="--c:var(--orange)"></i>speech model</li>
+            <li><i style="--c:var(--green)"></i>control logic</li>
+            <li><i style="--c:var(--violet)"></i>LLM runtime</li>
+            <li><i style="--c:var(--yellow)"></i>delegated reasoning</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="dark-section" id="turns">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="kicker">02 / Turn logic</div>
+          <h2>Four paths through a conversation</h2>
+          <p>Select a scenario. These sequences map to frames and handlers in <code>natural.py</code>.</p>
+        </div>
+
+        <div class="tablist" role="tablist" aria-label="Conversation scenarios">
+          <button role="tab" id="tab-normal" aria-controls="panel-normal" aria-selected="true">Normal reply</button>
+          <button role="tab" id="tab-interrupt" aria-controls="panel-interrupt" aria-selected="false">User interrupts</button>
+          <button role="tab" id="tab-listening" aria-controls="panel-listening" aria-selected="false">Active listening</button>
+          <button role="tab" id="tab-delegate" aria-controls="panel-delegate" aria-selected="false">Complex request</button>
+        </div>
+
+        <div class="scenario" id="panel-normal" role="tabpanel" aria-labelledby="tab-normal">
+          <div class="scenario-copy"><span class="state">Path A · default</span><h3>Hear, decide, stream, speak.</h3><p>VAD supplies acoustic evidence; Smart Turn decides the utterance is complete. A short filler may be spoken while Ollama produces its first token.</p></div>
+          <ol class="sequence">
+            <li><strong>Capture PCM audio</strong><small><code>transport.input()</code></small></li>
+            <li><strong>Emit interim and final transcript frames</strong><small><code>WhisperSTTServiceMLX</code></small></li>
+            <li><strong>Close the user turn semantically</strong><small>Silero + Smart Turn v3</small></li>
+            <li><strong>Optionally queue “hmm” or “let’s see”</strong><small><code>BotBackchannelFrame</code></small></li>
+            <li><strong>Stream assistant tokens into TTS</strong><small>Ollama → Kokoro/Orpheus</small></li>
+            <li><strong>Play speech and commit assistant context</strong><small>output → assistant aggregator</small></li>
+          </ol>
+        </div>
+
+        <div class="scenario" id="panel-interrupt" role="tabpanel" aria-labelledby="tab-interrupt" hidden>
+          <div class="scenario-copy"><span class="state">Path B · barge-in</span><h3>Real speech wins; stray “yeah” does not.</h3><p>At least two recognized words are required to start an interrupting turn. Known short acknowledgments and laughter are converted to non-conversational backchannel frames while the bot speaks.</p></div>
+          <ol class="sequence">
+            <li><strong>Bot emits speaking-state frame</strong><small><code>BotStartedSpeakingFrame</code></small></li>
+            <li><strong>User begins talking over output</strong><small>VAD detects voice</small></li>
+            <li><strong>Filter checks acknowledgment vocabulary</strong><small>exact + laughter patterns</small></li>
+            <li><strong>“mm-hmm” becomes a backchannel</strong><small>does not enter LLM context</small></li>
+            <li><strong>Two or more real words start a new turn</strong><small><code>MinWords...Strategy</code></small></li>
+            <li><strong>Pipeline interruption cancels current response</strong><small>Pipecat frame semantics</small></li>
+          </ol>
+        </div>
+
+        <div class="scenario" id="panel-listening" role="tabpanel" aria-labelledby="tab-listening" hidden>
+          <div class="scenario-copy"><span class="state">Path C · rapport</span><h3>Signal attention without polluting memory.</h3><p>During a sufficiently long user turn, the companion may inject a quiet acknowledgment. It is spoken, but it is not stored as an assistant response and is not interruptible.</p></div>
+          <ol class="sequence">
+            <li><strong>Track the beginning of user speech</strong><small><code>VADUserStarted...</code></small></li>
+            <li><strong>Accumulate recognized word count</strong><small>interim or final frames</small></li>
+            <li><strong>Require ≥ 3.5 seconds and ≥ 14 words</strong><small>plus 9-second cooldown</small></li>
+            <li><strong>Apply 60% probability gate</strong><small>avoid repetitive behavior</small></li>
+            <li><strong>Choose “mm-hmm”, “uh-huh”, “right”, or “hmm”</strong><small>random selection</small></li>
+            <li><strong>Emit as <code>BotBackchannelFrame</code></strong><small>spoken, not added to history</small></li>
+          </ol>
+        </div>
+
+        <div class="scenario" id="panel-delegate" role="tabpanel" aria-labelledby="tab-delegate" hidden>
+          <div class="scenario-copy"><span class="state">Path D · tool call</span><h3>Keep conversation fast; move hard thinking aside.</h3><p>The chat model handles dialogue. For calculation, research, or multi-step reasoning, the system prompt tells it to call a single local tool backed by a larger Ollama model.</p></div>
+          <ol class="sequence">
+            <li><strong>Chat model identifies a complex task</strong><small>system prompt policy</small></li>
+            <li><strong>Call <code>ask_backend</code> with a precise task</strong><small>Pipecat tool schema</small></li>
+            <li><strong>Async Ollama client invokes backend model</strong><small>separate system instruction</small></li>
+            <li><strong>Backend returns <code>{ answer }</code></strong><small>tool result callback</small></li>
+            <li><strong>Chat model compresses answer for speech</strong><small>one to three sentences</small></li>
+            <li><strong>TTS speaks the final conversational answer</strong><small>same output path</small></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section id="models">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="kicker">03 / Models</div>
+          <h2>Model architecture</h2>
+          <p>Four local inference responsibilities, deliberately separated so each can be tuned or replaced independently.</p>
+        </div>
+        <div class="model-grid">
+          <article class="model-card" data-index="1">
+            <span class="role">Speech recognition</span>
+            <h3>Whisper Large v3 Turbo · Q4</h3>
+            <div class="id">mlx-community/whisper-large-v3-turbo-q4</div>
+            <dl><dt>Runtime</dt><dd>MLX on Apple Silicon</dd><dt>Language</dt><dd>Forced English</dd><dt>Input</dt><dd>PCM audio frames</dd><dt>Output</dt><dd>Interim/final transcript frames</dd></dl>
+          </article>
+          <article class="model-card" data-index="2">
+            <span class="role">Conversational intelligence</span>
+            <h3>Qwen 2.5 Chat</h3>
+            <div class="id">qwen2.5:14b default · qwen2.5:7b tested profile</div>
+            <dl><dt>Runtime</dt><dd>Ollama</dd><dt>Job</dt><dd>Dialogue + tool choice</dd><dt>Context</dt><dd>System + user + assistant + tool</dd><dt>Output</dt><dd>Streamed spoken text</dd></dl>
+          </article>
+          <article class="model-card" data-index="3">
+            <span class="role">Backend reasoning</span>
+            <h3>Qwen 2.5 Reasoner</h3>
+            <div class="id">qwen2.5:32b default · qwen2.5:14b tested profile</div>
+            <dl><dt>Runtime</dt><dd>Ollama AsyncClient</dd><dt>Job</dt><dd>Complex reasoning</dd><dt>Exposure</dt><dd><code>ask_backend</code> only</dd><dt>Output</dt><dd>Tool result JSON</dd></dl>
+          </article>
+          <article class="model-card" data-index="4">
+            <span class="role">Speech synthesis</span>
+            <h3>Kokoro or Orpheus 3B</h3>
+            <div class="id">Kokoro ONNX local · Orpheus OpenAI-compatible endpoint</div>
+            <dl><dt>Default</dt><dd>Kokoro · <code>af_heart</code></dd><dt>Alternative</dt><dd>Orpheus · <code>tara</code></dd><dt>Input</dt><dd>Streamed text</dd><dt>Output</dt><dd>Playback audio frames</dd></dl>
+          </article>
+        </div>
+        <div class="choice-note"><strong>32 GB Mac profile:</strong> use <code>qwen2.5:7b</code> for live conversation and <code>qwen2.5:14b</code> for delegated work. The source defaults—14B plus 32B—are more demanding and can increase memory pressure and first-token latency.</div>
+      </div>
+    </section>
+
+    <section id="implementation">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="kicker">04 / Code map</div>
+          <h2>Ownership by layer</h2>
+          <p>The component boundary is a Pipecat frame. Each layer can observe, transform, consume, or emit frames downstream.</p>
+        </div>
+        <div class="layers">
+          <aside>
+            <strong>Source index</strong>
+            <p>The production-like configurable path lives in two files.</p>
+            <nav aria-label="Source files">
+              <a href="main.py">main.py</a>
+              <a href="natural.py">natural.py</a>
+              <a href="system_prompt.md">system_prompt.md</a>
+              <a href="voice_audition.py">voice_audition.py</a>
+              <a href="bot.py">bot.py · alternate</a>
+            </nav>
+          </aside>
+          <div class="layer-stack">
+            <article class="layer"><h3>Configuration</h3><p>CLI flags become <code>CompanionConfig</code>; pre-flight confirms Ollama and both requested models are available.</p><div class="owner">main.py<br>parse_args · check_ollama_status</div></article>
+            <article class="layer"><h3>Audio + STT</h3><p><code>LocalAudioTransport</code> owns microphone/speaker I/O. <code>WhisperSTTServiceMLX</code> transcribes English.</p><div class="owner">natural.py<br>build_companion_pipeline</div></article>
+            <article class="layer"><h3>Human turn logic</h3><p><code>UserBackchannelFilter</code>, <code>AttentiveBackchannelProcessor</code>, Silero VAD, minimum words, and Smart Turn shape conversational timing.</p><div class="owner">natural.py<br>custom FrameProcessors</div></article>
+            <article class="layer"><h3>Conversation + tools</h3><p><code>LLMContextAggregatorPair</code> owns history. <code>OLLamaLLMService</code> streams text and may invoke <code>ask_backend</code>.</p><div class="owner">natural.py<br>LLMContext · ToolsSchema</div></article>
+            <article class="layer"><h3>Speech output</h3><p><code>create_tts_service</code> selects Kokoro in-process or an OpenAI-compatible Orpheus endpoint.</p><div class="owner">natural.py<br>KokoroTTSService · OpenAITTSService</div></article>
+            <article class="layer"><h3>Behavior policy</h3><p>Speech-only wording, compact replies, rare sound/pace tags, style switching, and delegation rules are prompt-controlled.</p><div class="owner">system_prompt.md<br>loaded at process start</div></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="run">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="kicker">05 / Operations</div>
+          <h2>Local deployment contract</h2>
+          <p>No hosted inference is required for the tested Kokoro path. Models, audio, transcripts, and context remain on the Mac.</p>
+        </div>
+        <div class="split">
+          <article class="panel">
+            <h3>Process topology</h3>
+            <ul class="spec-list">
+              <li><span>Process A</span><strong>ollama serve</strong></li>
+              <li><span>Process B</span><strong>Python 3.14 · Pipecat worker</strong></li>
+              <li><span>Accelerator</span><strong>Metal / MLX</strong></li>
+              <li><span>Input</span><strong>MacBook Pro Microphone · index 1</strong></li>
+              <li><span>Output</span><strong>MacBook Pro Speakers · index 2</strong></li>
+              <li><span>Network</span><strong>localhost Ollama API</strong></li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>Behavior thresholds</h3>
+            <ul class="spec-list">
+              <li><span>VAD confidence</span><strong>0.70</strong></li>
+              <li><span>VAD stop</span><strong>0.40 seconds</strong></li>
+              <li><span>Barge-in</span><strong>minimum 2 words</strong></li>
+              <li><span>Listener cue</span><strong>≥ 14 words + ≥ 3.5 sec</strong></li>
+              <li><span>Listener cooldown</span><strong>9 seconds · 60% chance</strong></li>
+              <li><span>Worker timeout</span><strong>disabled · runs until Ctrl+C</strong></li>
+            </ul>
+          </article>
+        </div>
+        <div class="terminal" aria-label="Commands to run the headless companion">
+          <div class="terminal-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+          <pre><span class="comment"># Terminal 1 — local model server</span>
+<span class="cmd">ollama serve</span>
+
+<span class="comment"># Terminal 2 — verified 32 GB Mac profile</span>
+<span class="cmd">cd /Users/nishad/VoiceAI</span>
+<span class="cmd">.venv/bin/python headless/main.py \</span>
+<span class="cmd">  --input-device 1 --output-device 2 \</span>
+<span class="cmd">  --chat-model qwen2.5:7b \</span>
+<span class="cmd">  --backend-model qwen2.5:14b</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="constraints">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="kicker">06 / Boundaries</div>
+          <h2>What this PoC is—and is not</h2>
+          <p>The local architecture proves conversational behavior. A production call-center deployment needs additional media, safety, and operational layers.</p>
+        </div>
+        <div class="risk-grid">
+          <article class="risk"><span class="level">Current gap</span><h3>No echo cancellation</h3><p>The local transport can re-capture speaker output. Use headphones; production needs AEC and noise suppression.</p></article>
+          <article class="risk"><span class="level">PoC boundary</span><h3>No telephony gateway</h3><p>This path uses local PyAudio devices, not SIP, PSTN, WebRTC, Twilio, or carrier infrastructure.</p></article>
+          <article class="risk"><span class="level">Current gap</span><h3>No durable observability</h3><p>Loguru emits runtime logs, but there are no persisted traces, latency histograms, recordings, or quality dashboards.</p></article>
+          <article class="risk"><span class="level">Production risk</span><h3>Prompt-only tool policy</h3><p>Delegation is model-selected and the backend has no external fact source. Add authorization, validation, timeouts, and audited business tools.</p></article>
+          <article class="risk"><span class="level">PoC boundary</span><h3>English recognition fixed</h3><p>The STT service sets <code>Language.EN</code>. Multilingual and code-switching behavior are outside this headless path.</p></article>
+          <article class="risk"><span class="level">Design choice</span><h3>Emotion is indirect</h3><p>Kokoro receives punctuation and prompt-shaped text. Orpheus is the intended richer emotional path, but needs a separate local server.</p></article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot"><span><strong>Hiwar AI</strong> · local headless voice companion</span><span>Derived from the checked-in implementation · no external assets</span></div>
+  </footer>
+
+  <script>
+    const tabs = [...document.querySelectorAll('[role="tab"]')];
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => selectTab(tab));
+      tab.addEventListener('keydown', (event) => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        let next = index;
+        if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+        if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+        if (event.key === 'Home') next = 0;
+        if (event.key === 'End') next = tabs.length - 1;
+        selectTab(tabs[next]);
+        tabs[next].focus();
+      });
+    });
+
+    function selectTab(selected) {
+      tabs.forEach((tab) => {
+        const active = tab === selected;
+        tab.setAttribute('aria-selected', String(active));
+        document.getElementById(tab.getAttribute('aria-controls')).hidden = !active;
+      });
+    }
+  </script>
+</body>
+</html>
